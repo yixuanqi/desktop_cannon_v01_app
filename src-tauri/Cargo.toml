@@ -1,0 +1,16 @@
+[package]
+name = "desktop-cannon"
+version = "0.1.1"
+edition = "2021"
+description = "Cute desktop cannon with a click-through overlay"
+
+[lib]
+name = "desktop_cannon_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+serde = { version = "1", features = ["derive"] }

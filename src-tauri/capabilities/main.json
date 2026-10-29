@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capabilities",
+  "description": "The two local desktop cannon windows may exchange fire/impact events.",
+  "windows": [
+    "cannon",
+    "overlay"
+  ],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:window:allow-start-dragging"
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "name": "desktop-cannon",
   "private": true,
-  "version": "0.4.0-mesh",
+  "version": "0.4.1-mesh",
   "type": "module",
   "description": "Windows 可爱桌面小炮 V0.4，原版素材局部网格微动 + Tauri 2",
   "scripts": {

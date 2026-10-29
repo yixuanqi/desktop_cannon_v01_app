@@ -1,0 +1,166 @@
+TAP version 13
+# Subtest: 二维拉闩完整事件链：旋转/预览/发射/复位/Esc取消
+ok 1 - 二维拉闩完整事件链：旋转/预览/发射/复位/Esc取消
+  ---
+  duration_ms: 460.314818
+  type: 'test'
+  ...
+# Subtest: 拖动小炮之后瞄准使用新窗口坐标，并以抬手位置作为最终发射值
+ok 2 - 拖动小炮之后瞄准使用新窗口坐标，并以抬手位置作为最终发射值
+  ---
+  duration_ms: 11.306964
+  type: 'test'
+  ...
+# Subtest: 二维拉闩：向右拉增加力度，上下微调30°至38°并按0.5°量化
+ok 3 - 二维拉闩：向右拉增加力度，上下微调30°至38°并按0.5°量化
+  ---
+  duration_ms: 1.996074
+  type: 'test'
+  ...
+# Subtest: 帧索引0-16、34°保持原图、权重保留草地
+ok 4 - 帧索引0-16、34°保持原图、权重保留草地
+  ---
+  duration_ms: 0.536267
+  type: 'test'
+  ...
+# Subtest: 网格变形下炮口与炮尾持续运动，非刚性旋转的半径不作约束
+ok 5 - 网格变形下炮口与炮尾持续运动，非刚性旋转的半径不作约束
+  ---
+  duration_ms: 0.489226
+  type: 'test'
+  ...
+# Subtest: 移动整个小炮后，预测和真实发射使用相同网格炮口位置
+ok 6 - 移动整个小炮后，预测和真实发射使用相同网格炮口位置
+  ---
+  duration_ms: 0.255444
+  type: 'test'
+  ...
+# Subtest: 预测弹道与真实炮弹共用 1/120 秒固定步长，首点位于炮口
+ok 7 - 预测弹道与真实炮弹共用 1/120 秒固定步长，首点位于炮口
+  ---
+  duration_ms: 1.480027
+  type: 'test'
+  ...
+# Subtest: 预览移动：根据屏幕指针位移移动整个小炮而非零件
+ok 8 - 预览移动：根据屏幕指针位移移动整个小炮而非零件
+  ---
+  duration_ms: 2.993304
+  type: 'test'
+  ...
+# Subtest: 浏览器预览：炮身移动改变窗口位置；炮闩单独蓄力且从新位置发射
+ok 9 - 浏览器预览：炮身移动改变窗口位置；炮闩单独蓄力且从新位置发射
+  ---
+  duration_ms: 495.938645
+  type: 'test'
+  ...
+# Subtest: 从炮闩按下、拖动、松手，到跨窗事件、炮弹生成和动画恢复
+ok 10 - 从炮闩按下、拖动、松手，到跨窗事件、炮弹生成和动画恢复
+  ---
+  duration_ms: 505.824325
+  type: 'test'
+  ...
+# Subtest: V0.4 原版图整图网格变形，不再裁开炮管和木轮
+ok 11 - V0.4 原版图整图网格变形，不再裁开炮管和木轮
+  ---
+  duration_ms: 1.426086
+  type: 'test'
+  ...
+# Subtest: 17 个实际 RGBA 图像存在，尺寸统一，帧索引正确
+ok 12 - 17 个实际 RGBA 图像存在，尺寸统一，帧索引正确
+  ---
+  duration_ms: 4.135672
+  type: 'test'
+  ...
+# Subtest: runtime JS 位移场参数与离线 Python 生成配置完全一致
+ok 13 - runtime JS 位移场参数与离线 Python 生成配置完全一致
+  ---
+  duration_ms: 1.505556
+  type: 'test'
+  ...
+# Subtest: 所有角度的炮口/炮尾锚点连续，帧序号不溢出
+ok 14 - 所有角度的炮口/炮尾锚点连续，帧序号不溢出
+  ---
+  duration_ms: 0.806474
+  type: 'test'
+  ...
+# Subtest: 蓄力：只允许向右拖动，最大 90px
+ok 15 - 蓄力：只允许向右拖动，最大 90px
+  ---
+  duration_ms: 1.015879
+  type: 'test'
+  ...
+# Subtest: 力度越大，初速度越大；方向左上
+ok 16 - 力度越大，初速度越大；方向左上
+  ---
+  duration_ms: 0.247092
+  type: 'test'
+  ...
+# Subtest: 固定时间步长模拟重力：速度先上升后下降
+ok 17 - 固定时间步长模拟重力：速度先上升后下降
+  ---
+  duration_ms: 0.343477
+  type: 'test'
+  ...
+# Subtest: 左边界碰撞，X 速度取正，位置不会越界
+ok 18 - 左边界碰撞，X 速度取正，位置不会越界
+  ---
+  duration_ms: 0.156005
+  type: 'test'
+  ...
+# Subtest: 顶部边界碰撞，Y 速度转正
+ok 19 - 顶部边界碰撞，Y 速度转正
+  ---
+  duration_ms: 0.210818
+  type: 'test'
+  ...
+# Subtest: 地面碰撞触发反弹并损失能量
+ok 20 - 地面碰撞触发反弹并损失能量
+  ---
+  duration_ms: 0.214102
+  type: 'test'
+  ...
+# Subtest: 低速最终着地，停止并且自动销毁
+ok 21 - 低速最终着地，停止并且自动销毁
+  ---
+  duration_ms: 0.244578
+  type: 'test'
+  ...
+# Subtest: 物理步长处理 75ms 卡顿且不会 NaN
+ok 22 - 物理步长处理 75ms 卡顿且不会 NaN
+  ---
+  duration_ms: 1.088879
+  type: 'test'
+  ...
+# Subtest: 关键帧状态段
+ok 23 - 关键帧状态段
+  ---
+  duration_ms: 0.314352
+  type: 'test'
+  ...
+# Subtest: 默认桌面摆放、发射坐标换算
+ok 24 - 默认桌面摆放、发射坐标换算
+  ---
+  duration_ms: 0.914476
+  type: 'test'
+  ...
+# Subtest: 实际炮弹不同刷新率与不均匀帧时间下，沿同一轨迹运动
+ok 25 - 实际炮弹不同刷新率与不均匀帧时间下，沿同一轨迹运动
+  ---
+  duration_ms: 9.113864
+  type: 'test'
+  ...
+# Subtest: 预测虚线每一点与实弹固定步长轨迹一致，包括首次碰撞点
+ok 26 - 预测虚线每一点与实弹固定步长轨迹一致，包括首次碰撞点
+  ---
+  duration_ms: 0.586964
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1020.383669

@@ -14,7 +14,7 @@ export function shotVelocity(power, angleDegrees = 34) {
 export function createProjectile({ x, y, power, angle = 34, radius = 9, id = 1 }) {
   const velocity = shotVelocity(power, angle);
   return { id, x, y, vx: velocity.vx, vy: velocity.vy, radius, age: 0,
-    trailTimer: 0, grounded: false, hitCount: 0, alive: true };
+    trailTimer: 0, grounded: false, hitCount: 0, alive: true, simRemainder: 0 };
 }
 /**
  * Advance by dt; optional onImpact({x,y,kind,speed}) observer.
@@ -68,5 +68,22 @@ export function stepProjectile(ball, dt, bounds, onImpact = () => {}) {
       ball.alive = false;
     }
   }
+  return ball;
+}
+
+/**
+ * Live projectiles advance in exactly the same 1/120s steps as trajectory.mjs.
+ * Accumulate fractional frame time rather than using a different final
+ * fractional physics step for each requestAnimationFrame callback. This
+ * removes refresh-rate-dependent trajectory drift on 60/120/144Hz screens.
+ */
+export function advanceProjectileFrame(ball, dt, bounds, onImpact = () => {}) {
+  if (!ball.alive || !Number.isFinite(dt) || dt <= 0) return ball;
+  ball.simRemainder = (ball.simRemainder ?? 0) + Math.min(dt, 0.075);
+  while (ball.simRemainder + 1e-10 >= PHYSICS.maxStep && ball.alive) {
+    stepProjectile(ball, PHYSICS.maxStep, bounds, onImpact);
+    ball.simRemainder -= PHYSICS.maxStep;
+  }
+  if (ball.simRemainder < 0) ball.simRemainder = 0;
   return ball;
 }

@@ -74,7 +74,8 @@ function pointerDown(e) {
   if ((e.button != null && e.button !== 0) || charging || movingPreview) return;
   e.preventDefault(); e.stopPropagation?.();
   charging = true;
-  chargeSequence++;
+  const sequence=++chargeSequence;
+  layout = null; // Never use old cannon coordinates after a window drag.
   activePointerId = e.pointerId;
   downX = e.clientX;
   downY = Number.isFinite(e.clientY) ? e.clientY : 0;
@@ -84,7 +85,7 @@ function pointerDown(e) {
   setAim(0, currentAngle);
   // The cannon window does not move during a lever drag; its last physical
   // position is reliable until we refresh it once more immediately before fire.
-  getLayout().then(l => { if (charging) { layout = l; sendAimPreview(); } }).catch(() => {});
+  getLayout().then(l => { if (charging && sequence===chargeSequence) { layout = l; sendAimPreview(); } }).catch(() => {});
 }
 function sendAimPreview() {
   if (!charging || !layout || !shouldFire(powerFromPull(currentPull))) { stopAimPreview(); return; }
@@ -100,6 +101,11 @@ function pointerMove(e) {
 async function release(e) {
   if (!charging) return;
   e.preventDefault(); e.stopPropagation?.();
+  // Pointer-up can arrive at a new location without a final pointermove.
+  if (Number.isFinite(e.clientX) && Number.isFinite(e.clientY)) {
+    const finalPose = aimFromDrag(downX, downY, e.clientX, e.clientY, angleAtDown);
+    setAim(finalPose.pull, finalPose.angle);
+  }
   const power = powerFromPull(currentPull);
   const angle = currentAngle;
   charging = false;

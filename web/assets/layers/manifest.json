@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "source": "assets/cannon_base.png (V0.1.1 original, unchanged)",
+  "canvas": {
+    "width": 480,
+    "height": 350
+  },
+  "spritePlacementInCannonWindow": {
+    "x": 39,
+    "y": 53,
+    "width": 214,
+    "height": 156
+  },
+  "layerOrderBottomToTop": [
+    {
+      "id": "ground",
+      "path": "layers/ground.png",
+      "animate": false
+    },
+    {
+      "id": "barrel",
+      "path": "layers/barrel.png",
+      "animate": true
+    },
+    {
+      "id": "chassis",
+      "path": "layers/chassis.png",
+      "animate": false
+    }
+  ],
+  "separateV011Assets": [
+    "part_bolt_knob.png",
+    "part_spring.png",
+    "part_bolt_rod.png"
+  ],
+  "provisionalPivotInSourcePx": {
+    "x": 280,
+    "y": 216
+  },
+  "cssTransformOrigin": {
+    "xPercent": 58.33,
+    "yPercent": 61.71
+  },
+  "notes": [
+    "Neutral pose keeps original visible RGBA identical.",
+    "Receiver underlay uses only original covered pixels; never a redrawn barrel.",
+    "Conservative pitch is limited until full hidden geometry can be repainted."
+  ],
+  "stage": "V0.2-B",
+  "optionalReceiverOcclusionRepair": "layers/receiver_underlay.png",
+  "rotationLimitsDegrees": {
+    "default": 34,
+    "min": 26,
+    "max": 42
+  }
+}

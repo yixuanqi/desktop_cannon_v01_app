@@ -1,12 +1,13 @@
 import { listen, emit, getLayout } from './bridge.mjs';
 import { PHYSICS, createProjectile, stepProjectile } from './physics.mjs';
 import { ParticleSystem } from './particles.mjs';
+import { predictedTrajectory } from './trajectory.mjs';
 const canvas = document.querySelector('#field');
 const ctx = canvas.getContext('2d', { alpha: true });
 const sprite = new Image(); sprite.src = '/assets/cannonball.png';
 const fx = new ParticleSystem(); const projectiles = [];
 let layout; let rafId = 0; let lastTick = 0; let width = 0; let height = 0;
-let renderedFrames = 0; let lastImpactSoundAt = 0;
+let renderedFrames = 0; let lastImpactSoundAt = 0; let aim = null;
 function resize() {
   width = window.innerWidth; height = window.innerHeight;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -25,6 +26,17 @@ function onImpact(event) {
 }
 function render() {
   ctx.clearRect(0, 0, width, height);
+  if (aim) {
+    const bounds = { left:0, top:0, right:width, bottom:Math.min(height,layout?.taskbarTop ?? height-48) };
+    const dots=predictedTrajectory(aim,bounds);
+    ctx.save();
+    for (const p of dots) {
+      ctx.globalAlpha=p.opacity;
+      ctx.beginPath(); ctx.arc(p.x,p.y,3.1,0,Math.PI*2);
+      ctx.fillStyle='#f7c96b'; ctx.fill();
+    }
+    ctx.restore();
+  }
   for (const ball of projectiles) {
     if (sprite.complete && sprite.naturalWidth) {
       ctx.drawImage(sprite, ball.x-ball.radius, ball.y-ball.radius,ball.radius*2,ball.radius*2);
@@ -53,10 +65,14 @@ function loop(timestamp) {
   for(let i=projectiles.length-1;i>=0;i--) if(!projectiles[i].alive) projectiles.splice(i,1);
   fx.update(dt);
   render();
-  if (projectiles.length || fx.active) rafId = requestAnimationFrame(loop);
+  if (projectiles.length || fx.active || aim) rafId = requestAnimationFrame(loop);
   else lastTick = 0;
 }
 function wake() { if (!rafId) { lastTick = 0; rafId=requestAnimationFrame(loop); } }
+listen('cannon:aim', payload => {
+  if (Number.isFinite(payload?.x) && Number.isFinite(payload?.y)) { aim=payload; wake(); }
+});
+listen('cannon:aim-stop', () => { aim=null; if(!rafId) render(); });
 listen('cannon:fire', (payload) => {
   if (!payload || !Number.isFinite(payload.x) || !Number.isFinite(payload.y)) return;
   if (projectiles.length >= PHYSICS.maxProjectiles) projectiles.shift();
@@ -67,4 +83,4 @@ listen('cannon:fire', (payload) => {
 window.addEventListener('resize', () => { resize(); render(); });
 getLayout().then((value) => { layout = value; resize(); }).catch(console.error);
 resize();
-window.__overlayDebug = { projectiles, get renderedFrames(){return renderedFrames;}, get active(){ return Boolean(rafId); }, get layout(){return layout;}, fire:(payload) => { emit('cannon:fire', payload); } };
+window.__overlayDebug = { projectiles, get renderedFrames(){return renderedFrames;}, get active(){ return Boolean(rafId); }, get aim(){return aim;}, get layout(){return layout;}, fire:(payload) => { emit('cannon:fire', payload); } };

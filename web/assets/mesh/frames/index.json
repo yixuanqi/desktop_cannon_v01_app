@@ -1,0 +1,91 @@
+{
+  "rig": "../mesh_rig.json",
+  "source": "cannon_base.png",
+  "frames": [
+    {
+      "index": 0,
+      "angle": 30.0,
+      "file": "pitch_00.png"
+    },
+    {
+      "index": 1,
+      "angle": 30.5,
+      "file": "pitch_01.png"
+    },
+    {
+      "index": 2,
+      "angle": 31.0,
+      "file": "pitch_02.png"
+    },
+    {
+      "index": 3,
+      "angle": 31.5,
+      "file": "pitch_03.png"
+    },
+    {
+      "index": 4,
+      "angle": 32.0,
+      "file": "pitch_04.png"
+    },
+    {
+      "index": 5,
+      "angle": 32.5,
+      "file": "pitch_05.png"
+    },
+    {
+      "index": 6,
+      "angle": 33.0,
+      "file": "pitch_06.png"
+    },
+    {
+      "index": 7,
+      "angle": 33.5,
+      "file": "pitch_07.png"
+    },
+    {
+      "index": 8,
+      "angle": 34.0,
+      "file": "pitch_08.png"
+    },
+    {
+      "index": 9,
+      "angle": 34.5,
+      "file": "pitch_09.png"
+    },
+    {
+      "index": 10,
+      "angle": 35.0,
+      "file": "pitch_10.png"
+    },
+    {
+      "index": 11,
+      "angle": 35.5,
+      "file": "pitch_11.png"
+    },
+    {
+      "index": 12,
+      "angle": 36.0,
+      "file": "pitch_12.png"
+    },
+    {
+      "index": 13,
+      "angle": 36.5,
+      "file": "pitch_13.png"
+    },
+    {
+      "index": 14,
+      "angle": 37.0,
+      "file": "pitch_14.png"
+    },
+    {
+      "index": 15,
+      "angle": 37.5,
+      "file": "pitch_15.png"
+    },
+    {
+      "index": 16,
+      "angle": 38.0,
+      "file": "pitch_16.png"
+    }
+  ]
+}

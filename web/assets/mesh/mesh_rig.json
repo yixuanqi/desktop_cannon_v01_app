@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "technique": "smooth-displacement-field (precomputed mesh warp)",
+  "sourceFile": "../cannon_base.png",
+  "canvas": [480, 350],
+  "pivot": [280, 216],
+  "neutral_angle": 34,
+  "min_angle": 30,
+  "max_angle": 38,
+  "step_angle": 0.5,
+  "frame_count": 17,
+  "muzzle_source": [135, 160],
+  "receiver_source": [371, 187],
+  "influence": {
+    "top_fade_center_y": 242,
+    "top_fade_softness": 16,
+    "left_fade_center_x": 49,
+    "right_fade_center_x": 381,
+    "side_fade_softness": 18,
+    "wheel_center_x": 279,
+    "wheel_center_y": 258,
+    "wheel_sigma_x": 67,
+    "wheel_sigma_y": 44,
+    "wheel_suppression": 0.92,
+    "ground_fade_center_y": 294,
+    "ground_fade_softness": 8
+  }
+}

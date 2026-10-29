@@ -1,21 +1,37 @@
-:root{color-scheme:light;--yellow:#f7c96b}*{box-sizing:border-box}html,body,#cannon-root{margin:0;width:100%;height:100%;background:transparent!important;overflow:hidden;user-select:none;-webkit-user-select:none}body{font-family:'Microsoft YaHei UI','Segoe UI',sans-serif}#cannon-root{position:relative}.cannon-scene{position:absolute;inset:0;touch-action:none}.squash-wrap{cursor:grab;touch-action:none;z-index:1;position:absolute;left:39px;top:53px;width:214px;height:156px;transform-origin:59% 82%;will-change:transform}.squash-wrap:active{cursor:grabbing}.squash-wrap img{width:100%;height:100%;object-fit:contain;pointer-events:none;-webkit-user-drag:none}.bolt{position:absolute;width:65px;height:40px;left:172px;top:120px;object-fit:contain;cursor:ew-resize;touch-action:none;z-index:4;filter:drop-shadow(0 2px 1px #5f3b2444);-webkit-user-drag:none}.bolt:active{cursor:grabbing}.cannon-scene[data-state="hover"] .bolt{filter:drop-shadow(0 0 6px #ffe386)}.cannon-rig{position:absolute;inset:0;pointer-events:none;transform-origin:44% 76%;will-change:transform}
-.squash-wrap,.bolt{pointer-events:auto}
-.cannon-scene[data-state="idle"] .cannon-rig{animation:idle 3.5s ease-in-out infinite}
-.cannon-scene[data-state="hover"] .cannon-rig{animation:idle 1.8s ease-in-out infinite}
-.cannon-scene[data-state="firing"] .cannon-rig{transform:translate(9px,4px) rotate(5deg) scale(.96,.95)}
-.cannon-scene[data-state="recovering"] .cannon-rig{transition:transform 280ms cubic-bezier(.17,1.8,.4,1);transform:translate(0,0) rotate(0)}
-.cannon-scene[data-state="charging"] .cannon-rig{animation:none;transform:scale(1.025,.97)}@keyframes idle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-1.8px) rotate(-.6deg)}}.fire-flash{pointer-events:none;position:absolute;left:55px;top:68px;width:102px;height:102px;opacity:0;background:url('/assets/muzzle_00.png') center/contain no-repeat;transform:rotate(-33deg) scale(.3);z-index:5}.cannon-scene[data-state="firing"] .fire-flash{animation:flash 130ms ease-out forwards}@keyframes flash{0%{opacity:0;transform:rotate(-33deg) scale(.3)}24%{opacity:1;transform:rotate(-33deg) scale(1)}100%{opacity:0;transform:rotate(-33deg) scale(1.2)}}.power{pointer-events:none;position:absolute;left:55px;top:13px;width:183px;opacity:0;transition:opacity 120ms}.cannon-scene[data-state="charging"] .power{opacity:1}.power-label{font-size:12px;font-weight:700;color:#86501b;text-shadow:0 1px 1px #fffc}.power-label strong{float:right}.power-track{height:11px;border:2px solid #946640;border-radius:18px;background:#fff9e7;overflow:hidden;box-shadow:0 2px 4px #0002}.power-track>div{height:100%;width:0;background:linear-gradient(90deg,#f9d979,#ff9b59);border-radius:10px;transition:width 50ms}.hint{position:absolute;bottom:20px;left:15px;margin:0;padding:6px 12px;background:#fff8e5ee;border:1px solid #d9ab6b;border-radius:18px;color:#86501b;font-weight:600;font-size:11px;pointer-events:none;white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity 180ms,transform 180ms}.cannon-scene[data-state="hover"] .hint{opacity:1;transform:translateY(0)}
-
-/* Bolt shaft: fixed to the rear receiver, not attached to the moving knob.
-   It stretches with the pointer pull, eliminating the disconnected handle. */
-.bolt-spring{pointer-events:none;position:absolute;left:204px;top:134px;
+/* V0.4 mesh-frame rig: never cut or rotate original cannon image layers. */
+:root { color-scheme: light; --yellow:#f7c96b }
+* { box-sizing:border-box }
+html,body,#cannon-root { margin:0;width:100%;height:100%;background:transparent!important;overflow:hidden;user-select:none;-webkit-user-select:none }
+body{font-family:'Microsoft YaHei UI','Segoe UI',sans-serif}
+#cannon-root{position:relative}
+.cannon-scene,.cannon-rig{position:absolute;inset:0;touch-action:none}
+.cannon-rig{pointer-events:none}
+.squash-wrap{position:absolute;left:39px;top:53px;width:214px;height:156px;cursor:grab;touch-action:none;z-index:1;pointer-events:auto;-webkit-user-drag:none}
+.squash-wrap:active,.cannon-scene[data-moving="true"] .squash-wrap{cursor:grabbing}
+.mesh-frame{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none;-webkit-user-drag:none}
+/* The independent red handle tracks the subtle mesh-displaced receiver.
+   It is not baked into the original image, and can still be pulled independently. */
+.lever-axis{position:absolute;left:39px;top:53px;width:214px;height:156px;
+  z-index:4;transform-origin:165px 83px;pointer-events:none;will-change:transform}
+.bolt-spring{pointer-events:none;position:absolute;left:165px;top:81px;
   width:10px;height:13px;z-index:3;
-  background:url('/assets/part_spring.png') center / 100% 100% no-repeat;
+  background:url('/assets/part_spring.png') center/100% 100% no-repeat;
   filter:drop-shadow(0 1px 1px #28190e77);will-change:width}
-/* Better feedback while moving the entire small cannon window. */
-.cannon-scene[data-moving="true"] .squash-wrap{cursor:grabbing}.cannon-scene[data-moving="true"] .cannon-rig{animation:none}
-
-/* Visible lever stays at the art's correct ~0.45 scale; its transparent
-   wrapper remains 65x40 for a forgiving pointer hit target. */
-.bolt img{position:absolute;left:11px;top:9px;width:45px;height:23px;
-  object-fit:contain;pointer-events:none;-webkit-user-drag:none}
+.bolt{position:absolute;width:65px;height:40px;left:133px;top:67px;cursor:grab;
+  touch-action:none;z-index:4;filter:drop-shadow(0 2px 1px #5f3b2444);-webkit-user-drag:none;pointer-events:auto}
+.bolt:active{cursor:grabbing}
+.bolt img{position:absolute;left:11px;top:9px;width:45px;height:23px;object-fit:contain;pointer-events:none;-webkit-user-drag:none}
+.cannon-scene[data-state="hover"] .bolt{filter:drop-shadow(0 0 6px #ffe386)}
+.cannon-scene[data-state="firing"] .lever-axis{filter:brightness(1.04)}
+.fire-flash{pointer-events:none;position:absolute;left:55px;top:68px;width:102px;height:102px;opacity:0;
+  background:url('/assets/muzzle_00.png') center/contain no-repeat;transform:rotate(-33deg) scale(.3);z-index:5}
+.cannon-scene[data-state="firing"] .fire-flash{animation:flash 130ms ease-out forwards}
+@keyframes flash{0%{opacity:0;transform:rotate(-33deg) scale(.3)}24%{opacity:1;transform:rotate(-33deg) scale(1)}100%{opacity:0;transform:rotate(-33deg) scale(1.2)}}
+.power{pointer-events:none;position:absolute;left:46px;top:11px;width:220px;opacity:0;transition:opacity 120ms}
+.cannon-scene[data-state="charging"] .power{opacity:1}
+.power-label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:700;color:#86501b;text-shadow:0 1px 1px #fffc}
+.power-track{height:11px;border:2px solid #946640;border-radius:18px;background:#fff9e7;overflow:hidden;box-shadow:0 2px 4px #0002}
+.power-track>div{height:100%;width:0;background:linear-gradient(90deg,#f9d979,#ff9b59);border-radius:10px;transition:width 50ms}
+.hint{position:absolute;bottom:20px;left:15px;margin:0;padding:6px 12px;background:#fff8e5ee;border:1px solid #d9ab6b;border-radius:18px;
+  color:#86501b;font-weight:600;font-size:11px;pointer-events:none;white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity 180ms,transform 180ms}
+.cannon-scene[data-state="hover"] .hint{opacity:1;transform:translateY(0)}

@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { AIM, aimFromDrag, rotationDegrees } from '../web/js/aim.mjs';
 import { muzzleInCannon, muzzleOnOverlay, pointInSprite, receiverInCannon } from '../web/js/geometry.mjs';
 import { MESH, framePath, frameIndex, warpedSourcePoint, meshWeight, quantizePitch } from '../web/js/mesh-warp.mjs';
-import { predictedTrajectory } from '../web/js/trajectory.mjs';
-import { createProjectile,stepProjectile } from '../web/js/physics.mjs';
+import { predictedTrajectory, trajectoryStepCount } from '../web/js/trajectory.mjs';
+import { createProjectile,stepProjectile,PHYSICS } from '../web/js/physics.mjs';
 
 test('二维拉闩：向右拉增加力度，上下微调30°至38°并按0.5°量化',()=>{
  assert.deepEqual(aimFromDrag(100,100,145,100),{pull:45,power:.5,angle:34});
@@ -46,16 +46,21 @@ test('移动整个小炮后，预测和真实发射使用相同网格炮口位�
  assert.ok(Math.abs(muzzleOnOverlay({...layout,cannonX:810,cannonY:540},38).x-high.x-100)<1e-10);
  assert.ok(Math.abs(muzzleOnOverlay({...layout,cannonX:810,cannonY:540},38).y-high.y-50)<1e-10);
 });
-test('预测弹道复用真实物理步长，直至第一次撞击',()=>{
+test('预测弹道与真实炮弹共用 1/120 秒固定步长，首点位于炮口',()=>{
  const shot={x:1000,y:700,power:.62,angle:36};
  const bounds={left:0,top:0,right:1920,bottom:1032};
  const dots=predictedTrajectory(shot,bounds,0.045,35);
  assert.ok(dots.length>4 && dots.length<=35);
+ assert.equal(dots[0].x,shot.x);
+ assert.equal(dots[0].y,shot.y);
  const ball=createProjectile(shot);
- for(let i=0;i<dots.length;i++){
-  stepProjectile(ball,.045,bounds);
+ const substeps=trajectoryStepCount(.045);
+ for(let i=1;i<dots.length;i++){
+  let hit=false;
+  for(let j=0;j<substeps && !hit;j++)stepProjectile(ball,PHYSICS.maxStep,bounds,()=>{hit=true;});
   assert.ok(Math.abs(ball.x-dots[i].x)<1e-8);
   assert.ok(Math.abs(ball.y-dots[i].y)<1e-8);
+  if(hit) assert.equal(i,dots.length-1);
  }
  assert.deepEqual(predictedTrajectory({x:0,y:0,power:0,angle:34},bounds),[]);
 });

@@ -1,0 +1,11 @@
+2026-10-29 V0.2-B local validation (Linux)
+
+PASS: node --test tests/*.test.mjs : 20 passed / 0 failed.
+PASS: python scripts/validate_layers.py : 480x350 visible RGBA identical to original; receiver underlay neutral hidden.
+PASS: all 21 PNGs decode and 11 .mjs files pass node --check.
+CHECKED: static diagnostic 26/34/42 angle contact sheet at docs/v02_pitch_reference.png. This is NOT a real Windows screenshot.
+BLOCKED: python scripts/ui_smoke.py : Chromium reports net::ERR_BLOCKED_BY_ADMINISTRATOR on localhost.
+NOT RUN: Rust / Cargo / Tauri Windows native compilation; unavailable in this runtime.
+NOT RUN: Windows 11 real WebView2 transparent overlay, multi-DPI, mouse capture and graphical appearance.
+
+Known aesthetic limit: rotating the original baked sprite can reveal a few small seams near rear collar. Limit is 26-42 degrees until occluded details can be restored by hand. The initial default appearance is pixel-conserving.

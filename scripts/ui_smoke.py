@@ -38,10 +38,13 @@ try:
         screenshot=root/'docs'/'browser_preview_moved.png';page.screenshot(path=str(screenshot),full_page=True)
         box=c.locator('#bolt').bounding_box()
         x=box['x']+box['width']*.65; y=box['y']+box['height']*.5
-        page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+83,y,steps=12)
+        page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+83,y+20,steps=12)
         assert c.locator('#scene').get_attribute('data-state') == 'charging', 'charging while held'
         strength=c.locator('#power-number').inner_text()
         assert int(strength.strip('%')) > 70, f'power should increase: {strength}'
+        pitch=int(c.locator('#angle-number').inner_text().strip('°'))
+        assert pitch >= 39, f'pitch should rise after pulling down: {pitch}'
+        assert o.locator('canvas').evaluate('el=>Boolean(window.__overlayDebug.aim)'), 'trajectory preview should be active'
         screenshot=root/'docs'/'browser_preview_charging.png';page.screenshot(path=str(screenshot),full_page=True)
         page.mouse.up()
         page.wait_for_timeout(170)
@@ -54,7 +57,7 @@ try:
         assert c.locator('#scene').get_attribute('data-state') in ('idle','hover')
         assert not errors, f'JavaScript errors: {errors}'
         browser.close()
-        print('PASS Chromium preview: body reposition → bolt drag → >=70% charge → fire → projectile → frame loop → recovery')
+        print('PASS Chromium preview: body reposition → diagonal bolt drag → power/pitch → trajectory preview → fire → projectile → recovery')
         print(f'Frames: {moving["frames"]}; power: {strength}; page errors: 0')
 except Exception as exc:
     print('FAIL UI smoke:',exc)

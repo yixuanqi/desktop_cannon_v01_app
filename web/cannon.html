@@ -1,0 +1,13 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/><title>桌面小炮 · 交互窗</title><link rel="stylesheet" href="/cannon.css"/></head>
+<body><main id="cannon-root" aria-label="桌面小炮">
+  <div class="cannon-scene" id="scene" data-state="idle">
+    <div class="cannon-rig" id="rig">
+      <div class="squash-wrap" id="recoil"><img id="base" src="/assets/cannon_base.png" draggable="false" alt="奶油金小炮，绿色嫩芽和兔子木轮"/></div>
+      <div class="bolt-spring" id="bolt-spring" aria-hidden="true"></div>
+      <div class="bolt" id="bolt" role="button" aria-label="向右拉动红色炮闩蓄力"><img src="/assets/part_bolt_knob.png" alt="" draggable="false" /></div>
+    </div>
+    <div class="fire-flash" id="flash"></div>
+    <div class="power" id="power" aria-live="off"><div class="power-label">蓄力 <strong id="power-number">0%</strong></div><div class="power-track"><div id="power-fill"></div></div></div>
+    <p class="hint" id="hint">按住炮身可移动 · 拉红球蓄力发射</p>
+  </div>
+</main><script type="module" src="/js/cannon.mjs"></script></body></html>

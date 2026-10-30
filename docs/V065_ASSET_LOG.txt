@@ -1,0 +1,3 @@
+PASS: 17 images have correct 480×350 RGBA format and protected bottom grass
+PASS: 34° neutral image matches original exactly (all pixels and channels)
+PASS: extremal angles differ and changed images exist

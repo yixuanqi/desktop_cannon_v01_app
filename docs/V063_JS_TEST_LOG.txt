@@ -1,0 +1,388 @@
+TAP version 13
+# Subtest: 二维拉闩完整事件链：旋转/预览/发射/复位/Esc取消
+ok 1 - 二维拉闩完整事件链：旋转/预览/发射/复位/Esc取消
+  ---
+  duration_ms: 459.261853
+  type: 'test'
+  ...
+# Subtest: 拖动小炮之后瞄准使用新窗口坐标，并以抬手位置作为最终发射值
+ok 2 - 拖动小炮之后瞄准使用新窗口坐标，并以抬手位置作为最终发射值
+  ---
+  duration_ms: 11.737323
+  type: 'test'
+  ...
+# Subtest: 二维拉闩：向右拉增加力度，上下微调30°至38°并按0.5°量化
+ok 3 - 二维拉闩：向右拉增加力度，上下微调30°至38°并按0.5°量化
+  ---
+  duration_ms: 1.545902
+  type: 'test'
+  ...
+# Subtest: 帧索引0-16、34°保持原图、权重保留草地
+ok 4 - 帧索引0-16、34°保持原图、权重保留草地
+  ---
+  duration_ms: 0.387414
+  type: 'test'
+  ...
+# Subtest: 网格变形下炮口与炮尾持续运动，非刚性旋转的半径不作约束
+ok 5 - 网格变形下炮口与炮尾持续运动，非刚性旋转的半径不作约束
+  ---
+  duration_ms: 0.323508
+  type: 'test'
+  ...
+# Subtest: 移动整个小炮后，预测和真实发射使用相同网格炮口位置
+ok 6 - 移动整个小炮后，预测和真实发射使用相同网格炮口位置
+  ---
+  duration_ms: 0.367534
+  type: 'test'
+  ...
+# Subtest: 预测弹道与真实炮弹共用 1/120 秒固定步长，首点位于炮口
+ok 7 - 预测弹道与真实炮弹共用 1/120 秒固定步长，首点位于炮口
+  ---
+  duration_ms: 2.764229
+  type: 'test'
+  ...
+# Subtest: 预览移动：根据屏幕指针位移移动整个小炮而非零件
+ok 8 - 预览移动：根据屏幕指针位移移动整个小炮而非零件
+  ---
+  duration_ms: 1.108842
+  type: 'test'
+  ...
+# Subtest: 浏览器预览：炮身移动改变窗口位置；炮闩单独蓄力且从新位置发射
+ok 9 - 浏览器预览：炮身移动改变窗口位置；炮闩单独蓄力且从新位置发射
+  ---
+  duration_ms: 495.837045
+  type: 'test'
+  ...
+# Subtest: fingerprint: identical snapshots do not cause repeated prewarming, icon move and reorder do
+ok 10 - fingerprint: identical snapshots do not cause repeated prewarming, icon move and reorder do
+  ---
+  duration_ms: 1.210095
+  type: 'test'
+  ...
+# Subtest: screen resolution, DPI, taskbar and wallpaper fingerprints invalidate every old cache generation
+ok 11 - screen resolution, DPI, taskbar and wallpaper fingerprints invalidate every old cache generation
+  ---
+  duration_ms: 0.327614
+  type: 'test'
+  ...
+# Subtest: late asynchronous decoded images are discarded when environment changes
+ok 12 - late asynchronous decoded images are discarded when environment changes
+  ---
+  duration_ms: 0.685103
+  type: 'test'
+  ...
+# Subtest: new prewarm can begin while stale image decode is pending; old callbacks cannot overwrite new cache
+ok 13 - new prewarm can begin while stale image decode is pending; old callbacks cannot overwrite new cache
+  ---
+  duration_ms: 0.263638
+  type: 'test'
+  ...
+# Subtest: in-flight Explorer fetch cannot resurrect old rectangles after a display change
+ok 14 - in-flight Explorer fetch cannot resurrect old rectangles after a display change
+  ---
+  duration_ms: 0.680586
+  type: 'test'
+  ...
+# Subtest: invalidating an active visual illusion immediately removes its wallpaper mask and flying sprite
+ok 15 - invalidating an active visual illusion immediately removes its wallpaper mask and flying sprite
+  ---
+  duration_ms: 0.277739
+  type: 'test'
+  ...
+# Subtest: native environment observer is wired and remains separate from cannon physics
+ok 16 - native environment observer is wired and remains separate from cannon physics
+  ---
+  duration_ms: 1.165177
+  type: 'test'
+  ...
+# Subtest: 高速水平移动不会穿透图标单元
+ok 17 - 高速水平移动不会穿透图标单元
+  ---
+  duration_ms: 0.769341
+  type: 'test'
+  ...
+# Subtest: 圆形半径擦边命中与擦边之外不命中
+ok 18 - 圆形半径擦边命中与擦边之外不命中
+  ---
+  duration_ms: 0.274354
+  type: 'test'
+  ...
+# Subtest: 无有效数据、负大小、平行外侧均安全 miss
+ok 19 - 无有效数据、负大小、平行外侧均安全 miss
+  ---
+  duration_ms: 0.167853
+  type: 'test'
+  ...
+# Subtest: 多个图标只选最早命中且重复击中有冷却
+ok 20 - 多个图标只选最早命中且重复击中有冷却
+  ---
+  duration_ms: 1.032347
+  type: 'test'
+  ...
+# Subtest: negative screen origin + 150% dpi and derived image hitbox, not entire grid
+ok 21 - negative screen origin + 150% dpi and derived image hitbox, not entire grid
+  ---
+  duration_ms: 1.752443
+  type: 'test'
+  ...
+# Subtest: foreground other app does not globally erase icon candidates, but snapshot expiration does
+ok 22 - foreground other app does not globally erase icon candidates, but snapshot expiration does
+  ---
+  duration_ms: 0.224559
+  type: 'test'
+  ...
+# Subtest: spacing-only fallback is explicitly estimated and smaller than full grid
+ok 23 - spacing-only fallback is explicitly estimated and smaller than full grid
+  ---
+  duration_ms: 0.199911
+  type: 'test'
+  ...
+# Subtest: 图标命中把物理碰撞点、真实速度和屏幕矩形同步交给视觉物理层
+ok 24 - 图标命中把物理碰撞点、真实速度和屏幕矩形同步交给视觉物理层
+  ---
+  duration_ms: 3.166466
+  type: 'test'
+  ...
+# Subtest: M1: Shell image size shrinks big 95x123 grid to visible image approximation
+ok 25 - M1: Shell image size shrinks big 95x123 grid to visible image approximation
+  ---
+  duration_ms: 1.156024
+  type: 'test'
+  ...
+# Subtest: M2: image misses are not falsely registered in blank parts of Explorer grid
+ok 26 - M2: image misses are not falsely registered in blank parts of Explorer grid
+  ---
+  duration_ms: 4.964397
+  type: 'test'
+  ...
+# Subtest: M2: distinct cannon shots can hit the same icon in under 500ms, same shot cannot double-hit
+ok 27 - M2: distinct cannon shots can hit the same icon in under 500ms, same shot cannot double-hit
+  ---
+  duration_ms: 2.438968
+  type: 'test'
+  ...
+# Subtest: M2: foreground flags no longer erase every visible desktop icon target
+ok 28 - M2: foreground flags no longer erase every visible desktop icon target
+  ---
+  duration_ms: 0.221945
+  type: 'test'
+  ...
+# Subtest: M4: partial image prewarm does not drop all valid icons or delay impact on a cache miss
+ok 29 - M4: partial image prewarm does not drop all valid icons or delay impact on a cache miss
+  ---
+  duration_ms: 0.943544
+  type: 'test'
+  ...
+# Subtest: M3: wallpaper sample validates and maps physical screen coordinates to overlay CSS pixels
+ok 30 - M3: wallpaper sample validates and maps physical screen coordinates to overlay CSS pixels
+  ---
+  duration_ms: 3.154077
+  type: 'test'
+  ...
+# Subtest: M3: mismatched wallpaper and missing PNG data are rejected before caching
+ok 31 - M3: mismatched wallpaper and missing PNG data are rejected before caching
+  ---
+  duration_ms: 1.084676
+  type: 'test'
+  ...
+# Subtest: M4: hit starts synchronously from prewarmed cache with no async capture on collision
+ok 32 - M4: hit starts synchronously from prewarmed cache with no async capture on collision
+  ---
+  duration_ms: 0.558743
+  type: 'test'
+  ...
+# Subtest: M4: impact offset creates angular velocity (off-center hit produces spin)
+ok 33 - M4: impact offset creates angular velocity (off-center hit produces spin)
+  ---
+  duration_ms: 0.487405
+  type: 'test'
+  ...
+# Subtest: M4: gravity changes vertical velocity and the icon follows an actual ballistic arc
+ok 34 - M4: gravity changes vertical velocity and the icon follows an actual ballistic arc
+  ---
+  duration_ms: 0.717422
+  type: 'test'
+  ...
+# Subtest: M4: icon bounces at desktop floor and then returns through a damped spring
+ok 35 - M4: icon bounces at desktop floor and then returns through a damped spring
+  ---
+  duration_ms: 0.474195
+  type: 'test'
+  ...
+# Subtest: M4: stale position or missing prewarm cache falls back immediately without delayed animation
+ok 36 - M4: stale position or missing prewarm cache falls back immediately without delayed animation
+  ---
+  duration_ms: 0.216266
+  type: 'test'
+  ...
+# Subtest: M4: disabling experiment clears active sprite and all cached desktop images immediately
+ok 37 - M4: disabling experiment clears active sprite and all cached desktop images immediately
+  ---
+  duration_ms: 0.242025
+  type: 'test'
+  ...
+# Subtest: M4: cache prewarm is invalidated when feature is disabled while image decode is pending
+ok 38 - M4: cache prewarm is invalidated when feature is disabled while image decode is pending
+  ---
+  duration_ms: 0.466995
+  type: 'test'
+  ...
+# Subtest: M4: physics constants define real impulse, gravity, restitution and spring return
+ok 39 - M4: physics constants define real impulse, gravity, restitution and spring return
+  ---
+  duration_ms: 0.42383
+  type: 'test'
+  ...
+# Subtest: M4: fixed 120Hz accumulator keeps icon physics identical at 60/75/144Hz
+ok 40 - M4: fixed 120Hz accumulator keeps icon physics identical at 60/75/144Hz
+  ---
+  duration_ms: 0.666865
+  type: 'test'
+  ...
+# Subtest: 托盘只暴露一个桌面图标物理互动开关，不再暴露旧诊断菜单
+ok 41 - 托盘只暴露一个桌面图标物理互动开关，不再暴露旧诊断菜单
+  ---
+  duration_ms: 1.304297
+  type: 'test'
+  ...
+# Subtest: Windows provider uses supported read-only COM enumeration (static audit)
+ok 42 - Windows provider uses supported read-only COM enumeration (static audit)
+  ---
+  duration_ms: 0.880148
+  type: 'test'
+  ...
+# Subtest: 图标采样和图片解码在开关预热阶段执行，不在碰撞回调执行
+ok 43 - 图标采样和图片解码在开关预热阶段执行，不在碰撞回调执行
+  ---
+  duration_ms: 0.937463
+  type: 'test'
+  ...
+# Subtest: 默认禁用时无扫描，无碰撞回调，启用后按子步命中去重
+ok 44 - 默认禁用时无扫描，无碰撞回调，启用后按子步命中去重
+  ---
+  duration_ms: 3.476083
+  type: 'test'
+  ...
+# Subtest: 异步请求结束前禁用：过期结果不得复活
+ok 45 - 异步请求结束前禁用：过期结果不得复活
+  ---
+  duration_ms: 1.038045
+  type: 'test'
+  ...
+# Subtest: 实际固定物理子步触发 observer，原炮弹终态不改变
+ok 46 - 实际固定物理子步触发 observer，原炮弹终态不改变
+  ---
+  duration_ms: 4.142628
+  type: 'test'
+  ...
+# Subtest: 从炮闩按下、拖动、松手，到跨窗事件、炮弹生成和动画恢复
+ok 47 - 从炮闩按下、拖动、松手，到跨窗事件、炮弹生成和动画恢复
+  ---
+  duration_ms: 511.672946
+  type: 'test'
+  ...
+# Subtest: V0.4 原版图整图网格变形，不再裁开炮管和木轮
+ok 48 - V0.4 原版图整图网格变形，不再裁开炮管和木轮
+  ---
+  duration_ms: 1.026158
+  type: 'test'
+  ...
+# Subtest: 17 个实际 RGBA 图像存在，尺寸统一，帧索引正确
+ok 49 - 17 个实际 RGBA 图像存在，尺寸统一，帧索引正确
+  ---
+  duration_ms: 9.124802
+  type: 'test'
+  ...
+# Subtest: runtime JS 位移场参数与离线 Python 生成配置完全一致
+ok 50 - runtime JS 位移场参数与离线 Python 生成配置完全一致
+  ---
+  duration_ms: 1.322295
+  type: 'test'
+  ...
+# Subtest: 所有角度的炮口/炮尾锚点连续，帧序号不溢出
+ok 51 - 所有角度的炮口/炮尾锚点连续，帧序号不溢出
+  ---
+  duration_ms: 0.742479
+  type: 'test'
+  ...
+# Subtest: 蓄力：只允许向右拖动，最大 90px
+ok 52 - 蓄力：只允许向右拖动，最大 90px
+  ---
+  duration_ms: 1.210486
+  type: 'test'
+  ...
+# Subtest: 力度越大，初速度越大；方向左上
+ok 53 - 力度越大，初速度越大；方向左上
+  ---
+  duration_ms: 0.262256
+  type: 'test'
+  ...
+# Subtest: 固定时间步长模拟重力：速度先上升后下降
+ok 54 - 固定时间步长模拟重力：速度先上升后下降
+  ---
+  duration_ms: 0.435958
+  type: 'test'
+  ...
+# Subtest: 左边界碰撞，X 速度取正，位置不会越界
+ok 55 - 左边界碰撞，X 速度取正，位置不会越界
+  ---
+  duration_ms: 0.195595
+  type: 'test'
+  ...
+# Subtest: 顶部边界碰撞，Y 速度转正
+ok 56 - 顶部边界碰撞，Y 速度转正
+  ---
+  duration_ms: 0.188384
+  type: 'test'
+  ...
+# Subtest: 地面碰撞触发反弹并损失能量
+ok 57 - 地面碰撞触发反弹并损失能量
+  ---
+  duration_ms: 0.13939
+  type: 'test'
+  ...
+# Subtest: 低速最终着地，停止并且自动销毁
+ok 58 - 低速最终着地，停止并且自动销毁
+  ---
+  duration_ms: 0.339832
+  type: 'test'
+  ...
+# Subtest: 物理步长处理 75ms 卡顿且不会 NaN
+ok 59 - 物理步长处理 75ms 卡顿且不会 NaN
+  ---
+  duration_ms: 1.197566
+  type: 'test'
+  ...
+# Subtest: 关键帧状态段
+ok 60 - 关键帧状态段
+  ---
+  duration_ms: 0.345041
+  type: 'test'
+  ...
+# Subtest: 默认桌面摆放、发射坐标换算
+ok 61 - 默认桌面摆放、发射坐标换算
+  ---
+  duration_ms: 0.90857
+  type: 'test'
+  ...
+# Subtest: 实际炮弹不同刷新率与不均匀帧时间下，沿同一轨迹运动
+ok 62 - 实际炮弹不同刷新率与不均匀帧时间下，沿同一轨迹运动
+  ---
+  duration_ms: 7.641255
+  type: 'test'
+  ...
+# Subtest: 预测虚线每一点与实弹固定步长轨迹一致，包括首次碰撞点
+ok 63 - 预测虚线每一点与实弹固定步长轨迹一致，包括首次碰撞点
+  ---
+  duration_ms: 1.107851
+  type: 'test'
+  ...
+1..63
+# tests 63
+# suites 0
+# pass 63
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1288.079393

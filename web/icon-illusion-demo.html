@@ -1,0 +1,59 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/><title>V0.6.4 多图标物理演示</title>
+<style>
+:root{color-scheme:dark}body{margin:0;padding:24px;background:#172331;color:#f6eddf;font:15px/1.6 'Microsoft YaHei UI',sans-serif}h2{margin-top:0}
+p{max-width:900px;color:#c1d0d9}button{background:#edb969;border:0;border-radius:10px;padding:9px 17px;color:#382d20;font:inherit;cursor:pointer;margin:3px 8px 3px 0}button:disabled{opacity:.45;cursor:wait}
+#stage{width:min(900px,100%);aspect-ratio:900/480;position:relative;border:1px solid #8193a0;border-radius:12px;overflow:hidden}canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}#state{color:#f1c890;margin:10px 0}
+</style></head>
+<body><h2>Desktop Cannon V0.6.4 — 多图标物理演示</h2>
+<p>这是合成桌面的浏览器演示，不读取你的 Windows 图标。模拟炮弹依次穿过图标，它们会<strong>同时</strong>飞散、落地、停留 5–8 秒，然后分别弹性回位。图标名称不参与飞行。</p>
+<button id="fire" disabled>发射一颗横扫炮弹</button><button id="reset">立即恢复全部图标</button><div id="state">准备合成素材…</div>
+<div id="stage"><canvas id="wall"></canvas><canvas id="overlay"></canvas></div>
+<script type="module">
+import {IconIllusion} from './js/icon-interaction/illusion.mjs';
+import {allIconHits} from './js/icon-interaction/collision.mjs';
+const w=900,h=480,icons=Array.from({length:6},(_,i)=>({token:`demo:${i}`,screenX:138+i*112,screenY:160,cellWidth:86,cellHeight:118,imageSize:55,index:i}));
+const palette=['#ed8876','#89bc9b','#8094e1','#e4b35d','#a98fe7','#68bfd1'];
+const wall=document.querySelector('#wall'),overlay=document.querySelector('#overlay'),fire=document.querySelector('#fire'),reset=document.querySelector('#reset'),state=document.querySelector('#state');
+for(const c of [wall,overlay]){c.width=w;c.height=h;}
+const bgCanvas=document.createElement('canvas');bgCanvas.width=w;bgCanvas.height=h;const bg=bgCanvas.getContext('2d');
+bg.fillStyle='#426581';bg.fillRect(0,0,w,145);bg.fillStyle='#805d81';bg.fillRect(0,145,w,200);bg.fillStyle='#2e8b83';bg.fillRect(0,345,w,135);
+bg.font='bold 25px sans-serif';bg.fillStyle='#ffffff24';bg.fillText('DESKTOP  •  ICON PHYSICS',260,99);bg.fillText('MULTI HIT / 5–8s REST',295,310);
+const wallCtx=wall.getContext('2d');wallCtx.drawImage(bgCanvas,0,0);
+const data=[];
+for(const c of icons){
+ const pic=document.createElement('canvas');pic.width=c.cellWidth;pic.height=c.cellHeight;
+ const g=pic.getContext('2d');g.fillStyle=palette[c.index];g.beginPath();g.roundRect(16,12,54,54,15);g.fill();
+ g.fillStyle='#fff';g.textAlign='center';g.font='bold 29px sans-serif';g.fillText(String(c.index+1),43,49);
+ // The label is only on the static desktop; spriteDataUrl excludes it.
+ wallCtx.drawImage(pic,c.screenX,c.screenY);wallCtx.fillStyle='#fff';wallCtx.textAlign='center';wallCtx.font='13px sans-serif';wallCtx.fillText(`Tool-${c.index+1}`,c.screenX+43,c.screenY+94);
+ const patch=document.createElement('canvas');patch.width=c.cellWidth;patch.height=c.cellHeight;
+ patch.getContext('2d').drawImage(bgCanvas,c.screenX,c.screenY,c.cellWidth,c.cellHeight,0,0,c.cellWidth,c.cellHeight);
+ data.push({token:c.token,screenX:c.screenX,screenY:c.screenY,width:c.cellWidth,height:c.cellHeight,
+  imageLeft:16,imageTop:12,imageWidth:54,imageHeight:54,borderMatch:1,
+  backgroundDataUrl:patch.toDataURL('image/png'),spriteDataUrl:pic.toDataURL('image/png')});
+}
+const loadImage=url=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=url;});
+const engine=new IconIllusion({getLayout:()=>({overlayPhysicalX:0,overlayPhysicalY:0,scaleFactor:1}),loadImage});
+engine.setEnabled(true);await engine.prepare(data,'demo-layout');state.textContent='已预热 6 个独立图标，准备发射';fire.disabled=false;
+const ctx=overlay.getContext('2d');const hitRects=icons.map(c=>({token:c.token,rect:{x:c.screenX+13,y:c.screenY+9,width:60,height:60}}));
+let shots=[],previous=0,nextShot=0,running=false;
+const bounds={left:0,top:0,right:w,bottom:h};
+fire.onclick=()=>{shots.push({id:++nextShot,x:845,y:203,vx:-800,visited:new Set()});if(!running){running=true;requestAnimationFrame(frame);}};
+reset.onclick=()=>{engine.cancel();shots=[];ctx.clearRect(0,0,w,h);state.textContent='已立即移除所有遮罩，原图标可见';};
+function frame(time){
+ if(!previous)previous=time;
+ const dt=Math.min((time-previous)/1000,.05);previous=time;
+ for(const shot of shots){
+  const before=shot.x;shot.x+=shot.vx*dt;
+  const candidates=hitRects.filter(c=>!shot.visited.has(c.token)&&!engine.isActive(c.token));
+  const hits=allIconHits({x:before,y:shot.y},{x:shot.x,y:shot.y},6,candidates);
+  for(const hit of hits){shot.visited.add(hit.token);
+   engine.onHit({token:hit.token,hitX:hit.x,hitY:hit.y,velocityX:shot.vx,velocityY:-230});
+  }
+ }
+ shots=shots.filter(s=>s.x>-20);engine.update(dt,bounds);ctx.clearRect(0,0,w,h);engine.draw(ctx);
+ ctx.fillStyle='#f9d78c';for(const s of shots){ctx.beginPath();ctx.arc(s.x,s.y,7,0,Math.PI*2);ctx.fill();}
+ state.textContent=`同时飞散/落地：${engine.activeCount} 个　累计触发：${engine.succeeded} 次　（不移动真实桌面图标）`;
+ if(shots.length||engine.hasAnimation)requestAnimationFrame(frame);else{previous=0;running=false;}
+}
+</script></body></html>

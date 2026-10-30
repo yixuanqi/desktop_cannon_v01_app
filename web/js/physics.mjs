@@ -20,7 +20,7 @@ export function createProjectile({ x, y, power, angle = 34, radius = 9, id = 1 }
  * Advance by dt; optional onImpact({x,y,kind,speed}) observer.
  * Uses substeps to reduce tunneling at low frame rates.
  */
-export function stepProjectile(ball, dt, bounds, onImpact = () => {}) {
+export function stepProjectile(ball, dt, bounds, onImpact = () => {}, onSegment = () => {}) {
   if (!ball.alive || !Number.isFinite(dt) || dt <= 0) return ball;
   let remaining = Math.min(dt, 0.075);
   const left = bounds.left ?? 0;
@@ -30,6 +30,7 @@ export function stepProjectile(ball, dt, bounds, onImpact = () => {}) {
   if (!(right > left && bottom > top)) return ball;
   while (remaining > 1e-8 && ball.alive) {
     const h = Math.min(remaining, PHYSICS.maxStep);
+    const fromX=ball.x, fromY=ball.y;
     remaining -= h;
     ball.age += h;
     if (ball.grounded) {
@@ -64,6 +65,10 @@ export function stepProjectile(ball, dt, bounds, onImpact = () => {}) {
       if (v < 115) { ball.vy = 0; ball.grounded = true; }
       else { ball.vy = -v * PHYSICS.restitution; ball.vx *= 0.83; }
     }
+    // Observe the *actual* bounded physics segment, never a separately
+    // approximated animation path. Debug/icon collisions are non-invasive.
+    onSegment({x0:fromX,y0:fromY,x1:ball.x,y1:ball.y,radius:ball.radius,
+      shotId:ball.id,velocityX:ball.vx,velocityY:ball.vy});
     if (ball.grounded && Math.abs(ball.vx) < PHYSICS.stopSpeed || ball.age > PHYSICS.maxLifetime) {
       ball.alive = false;
     }
@@ -77,11 +82,11 @@ export function stepProjectile(ball, dt, bounds, onImpact = () => {}) {
  * fractional physics step for each requestAnimationFrame callback. This
  * removes refresh-rate-dependent trajectory drift on 60/120/144Hz screens.
  */
-export function advanceProjectileFrame(ball, dt, bounds, onImpact = () => {}) {
+export function advanceProjectileFrame(ball, dt, bounds, onImpact = () => {}, onSegment = () => {}) {
   if (!ball.alive || !Number.isFinite(dt) || dt <= 0) return ball;
   ball.simRemainder = (ball.simRemainder ?? 0) + Math.min(dt, 0.075);
   while (ball.simRemainder + 1e-10 >= PHYSICS.maxStep && ball.alive) {
-    stepProjectile(ball, PHYSICS.maxStep, bounds, onImpact);
+    stepProjectile(ball, PHYSICS.maxStep, bounds, onImpact, onSegment);
     ball.simRemainder -= PHYSICS.maxStep;
   }
   if (ball.simRemainder < 0) ball.simRemainder = 0;

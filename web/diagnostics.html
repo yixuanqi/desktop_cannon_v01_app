@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Desktop Cannon V0.6.0 原生诊断</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { background: #12202b; color: #edf5fb; font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; margin: 0; min-height: 100vh; }
+    header { padding: 20px 22px 15px; border-bottom: 1px solid #395164; background: #1b2d3c; }
+    h1 { font-size: 19px; margin: 0 0 8px; }
+    .version { display: inline-block; background:#315779; color:#d9f2ff; padding: 4px 9px; border-radius:6px; font-weight:700; font-size:13px; }
+    p { color: #b7ccd9; font-size: 12px; line-height: 1.7; margin: 10px 0 0; }
+    main { padding: 17px 20px; }
+    #state { color: #abdaf5; font-size: 13px; margin-bottom: 12px; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; border: 1px solid #456078; border-radius: 9px; background: #07131d; color: #e1f3e6; font-size: 12px; line-height: 1.65; min-height: 180px; padding: 13px; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    button { font:inherit; cursor:pointer; border:0; border-radius:8px; background:#3d83bd; color:white; padding:9px 13px; }
+    button.secondary { background:#344e63; }
+    button:disabled { opacity:.55; cursor:wait; }
+    small { display:block; margin-top:15px; color:#9db6c5; line-height:1.6; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>桌面小炮 · 独立原生诊断</h1>
+    <span class="version" id="build">V0.6.0-SINGLE-ICON-POC</span>
+    <p>此窗口不依赖全屏透明 Canvas 或托盘事件显示。即使图标识别失败，错误也应出现在下方。</p>
+  </header>
+  <main>
+    <div id="state" role="status">诊断窗口已打开，正在读取 Rust 状态…</div>
+    <pre id="report">独立窗口静态 UI 已就绪；如果数据持续不更新，请检查 WebView2 / Tauri JS 初始化。</pre>
+    <div class="buttons">
+      <button id="refresh">重新读取 Shell 坐标（只读）</button>
+      <button class="secondary" id="copy">复制诊断文本</button>
+    </div>
+    <small>若托盘没有“V0.6.0 · 打开独立诊断窗口”菜单项，则当前运行的不是这版程序。本版增加了实验性视觉飞散，但静态壁纸匹配未过时自动退回火星；开启实验后请关闭检测框。</small>
+  </main>
+  <script type="module">
+    import { formatNativeDiagnostics } from './js/icon-interaction/native-diagnostics.mjs';
+    const status = document.querySelector('#state');
+    const report = document.querySelector('#report');
+    const button = document.querySelector('#refresh');
+    let lastOutput = '';
+    async function refresh() {
+      if (button.disabled) return;
+      button.disabled = true;
+      status.textContent = '正在从 Rust 查询开关、窗口和 Explorer…';
+      try {
+        const invoke = globalThis.__TAURI__?.core?.invoke;
+        if (typeof invoke !== 'function') throw Error('当前页面没有 Tauri 原生桥接：请从托盘菜单启动本窗口');
+        const data = await invoke('icon_diagnostics');
+        lastOutput = formatNativeDiagnostics(data);
+        report.textContent = lastOutput;
+        const count = data?.shell?.rawCount;
+        status.textContent = data?.shell?.ok ? `Shell 查询成功 · 图标 ${count} 个` : 'Shell 查询失败 · 错误码见下方';
+      } catch (e) {
+        lastOutput = `V0.6.0 诊断桥接错误\n${String(e)}`;
+        report.textContent = lastOutput;
+        status.textContent = '诊断调用失败（不影响原版小炮）';
+      } finally { button.disabled = false; }
+    }
+    button.addEventListener('click', refresh);
+    document.querySelector('#copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(lastOutput || report.textContent); status.textContent='诊断文本已复制'; }
+      catch { status.textContent='复制被系统限制；可手动选择下方文字'; }
+    });
+    void refresh();
+  </script>
+</body>
+</html>

@@ -18,7 +18,7 @@ test('从炮闩按下、拖动、松手，到跨窗事件、炮弹生成和动�
     screenWidth:1920, screenHeight:1080, taskbarTop:1032, scaleFactor:1 };
   let layoutCalls = 0;
   globalThis.__TAURI__ = {
-    core: { invoke: async (name) => { assert.equal(name,'get_layout'); layoutCalls++; return {...layout}; } },
+    core: { invoke: async (name) => { if (name==='icon_capabilities') return {windowsShell:true,enabled:false,maskVerified:false,mode:'hit-only-probe'}; assert.equal(name,'get_layout'); layoutCalls++; return {...layout}; } },
     event: {
       listen: async (name, fn) => { if(!callbacks.has(name)) callbacks.set(name, []);callbacks.get(name).push(fn);return () => {}; },
       emit: async (name,payload) => {

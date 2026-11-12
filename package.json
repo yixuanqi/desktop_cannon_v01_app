@@ -1,9 +1,9 @@
 {
   "name": "desktop-cannon",
   "private": true,
-  "version": "0.6.5-sprite-integrity",
+  "version": "0.6.6-rc.1",
   "type": "module",
-  "description": "Desktop Cannon V0.6.5: Shell icon/thumbnail extraction, accurate trimmed sprite alignment",
+  "description": "Desktop Cannon V0.6.6 RC1: repair window stacking and DPI clipping; Windows release validation",
   "scripts": {
     "preview": "node scripts/dev-server.mjs",
     "test": "node --test",

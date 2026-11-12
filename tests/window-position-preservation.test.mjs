@@ -25,5 +25,5 @@ test('DPI resizing and click-through overlay safety are preserved',()=>{
   assert.match(section,/cannon\.set_size\(expected_size\)/);
   assert.match(section,/overlay\.set_size\(PhysicalSize::new\(display\.width,display\.height\)\)/);
   assert.match(lib,/overlay\.set_ignore_cursor_events\(true\)/);
-  assert.match(lib,/cannon\.set_position\(PhysicalPosition::new\(cannon_px,cannon_py\)\)/);
+  assert.match(lib,/cannon\.set_position\(PhysicalPosition::new\(cannon_px,\s*cannon_py\)\)/);
 });

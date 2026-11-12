@@ -183,6 +183,20 @@ fn get_layout(app: tauri::AppHandle) -> Result<Layout,String> {
     fresh_layout(&app)
 }
 
+/// Reassert the ordering of our two focusless topmost windows.
+/// Windows may place a newly activated topmost editor above the gadget.
+/// Keep the click-through overlay below the cannon, without focusing either.
+fn restore_cannon_z_order(
+    overlay: &tauri::WebviewWindow,
+    cannon: &tauri::WebviewWindow,
+) -> tauri::Result<()> {
+    overlay.set_always_on_top(false)?;
+    cannon.set_always_on_top(false)?;
+    overlay.set_always_on_top(true)?;
+    cannon.set_always_on_top(true)?;
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
         // Must be registered first. This prevents new copies of Desktop Cannon
@@ -267,6 +281,8 @@ pub fn run() {
             // Windows order: overlay first, interactive cannon last (topmost).
             overlay.show()?;
             cannon.show()?;
+            // The interactive cannon must sit above our full-screen visual overlay.
+            restore_cannon_z_order(&overlay, &cannon)?;
 
             let visibility = MenuItem::with_id(app, "visibility", "显示 / 隐藏小炮", true, None::<&str>)?;
             let mute = MenuItem::with_id(app, "audio", "音效开 / 关", true, None::<&str>)?;
@@ -301,6 +317,9 @@ pub fn run() {
                                 } else {
                                     let _ = overlay.show();
                                     let _ = cannon.show();
+                                    // Hide/show from the tray also recovers stacking behind
+                                    // other always-on-top editor/tool windows.
+                                    let _ = restore_cannon_z_order(&overlay, &cannon);
                                 }
                             }
                         }

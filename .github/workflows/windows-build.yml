@@ -70,22 +70,21 @@ jobs:
             dist/*.zip
           if-no-files-found: error
 
-      - name: 发布 v0.6.6 RC1 测试安装包（只运行一次）
+      - name: 发布 v0.6.6 最新正式下载包（仅本次合并触发）
         if: >-
           github.event_name == 'push' && github.ref == 'refs/heads/main' &&
-          startsWith(github.event.head_commit.message, 'chore(release): v0.6.6-rc.1')
+          startsWith(github.event.head_commit.message, 'chore(release): v0.6.6')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.6.6-rc.1
-          name: Desktop Cannon v0.6.6 RC1 - Windows window repair test
+          tag_name: v0.6.6
+          name: Desktop Cannon v0.6.6 - Windows window repair
           target_commitish: ${{ github.sha }}
-          prerelease: true
-          make_latest: false
+          prerelease: false
+          make_latest: true
           body: |
-            Windows 实机测试候选版：修复桌面小炮被其他窗口遮挡及 DPI 缩放导致窗口尺寸异常。
-            下载 DesktopCannon_x64-setup.exe（安装版）或 DesktopCannon_portable_x64.zip（绿色便携版）。
-            请关闭旧进程后再启动；重点核查 TRAE 前台、托盘隐藏/显示、125%/150% DPI。
-            本版尚待真实 Windows 桌面验收，未宣称问题完全解决。
+            Windows 修复版本：改善 Desktop Cannon 在其他桌面窗口前显示被遮挡，以及 DPI / 显示变化造成的大炮窗口裁切的问题。
+            下载 DesktopCannon_x64-setup.exe（Windows 安装版）或 DesktopCannon_portable_x64.zip（绿色版）。
+            本次已通过 Windows 构建与自动化检查。真实 Windows 桌面仍需用户体验反馈，不能保证所有窗口管理器和缩放配置下均已解决。
           files: |
             dist/DesktopCannon_x64-setup.exe
             dist/DesktopCannon_portable_x64.zip

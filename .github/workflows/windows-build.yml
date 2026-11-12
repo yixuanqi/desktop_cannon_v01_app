@@ -37,6 +37,14 @@ jobs:
       - name: 运行自动化测试
         run: npm test
 
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装素材测试依赖
+        run: python -m pip install numpy pillow
+
       - name: 校验小炮美术网格帧
         run: python scripts/validate_mesh.py
 

@@ -6,7 +6,7 @@
   "description": "Desktop Cannon V0.6.5: Shell icon/thumbnail extraction, accurate trimmed sprite alignment",
   "scripts": {
     "preview": "node scripts/dev-server.mjs",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test",
     "test:ui": "python scripts/ui_smoke.py",
     "tauri": "tauri",
     "dev": "tauri dev",

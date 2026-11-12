@@ -70,21 +70,22 @@ jobs:
             dist/*.zip
           if-no-files-found: error
 
-      - name: 发布 v0.6.6 最新正式下载包（仅本次合并触发）
+      - name: 发布 v0.6.7 最新正式下载包（仅本次合并触发）
         if: >-
           github.event_name == 'push' && github.ref == 'refs/heads/main' &&
-          startsWith(github.event.head_commit.message, 'chore(release): v0.6.6')
+          startsWith(github.event.head_commit.message, 'chore(release): v0.6.7')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.6.6
-          name: Desktop Cannon v0.6.6 - Windows window repair
+          tag_name: v0.6.7
+          name: Desktop Cannon v0.6.7 - icon interaction drag fix
           target_commitish: ${{ github.sha }}
           prerelease: false
           make_latest: true
           body: |
-            Windows 修复版本：改善 Desktop Cannon 在其他桌面窗口前显示被遮挡，以及 DPI / 显示变化造成的大炮窗口裁切的问题。
-            下载 DesktopCannon_x64-setup.exe（Windows 安装版）或 DesktopCannon_portable_x64.zip（绿色版）。
-            本次已通过 Windows 构建与自动化检查。真实 Windows 桌面仍需用户体验反馈，不能保证所有窗口管理器和缩放配置下均已解决。
+            Windows 修复版本：解决开启桌面图标物理交互后，炮身拖到左下角被每 2 秒环境轮询强制移回工作区的问题。
+            环境查询现在保留用户拖动坐标，继续进行透明特效层和 DPI 尺寸校验。
+            下载 DesktopCannon_x64-setup.exe（Windows 安装版）或 DesktopCannon_portable_x64.zip（绿色便携版）。
+            Windows 自动化测试和原生编译通过后发布；请在真实桌面上拖动并停留至少 10 秒验证。
           files: |
             dist/DesktopCannon_x64-setup.exe
             dist/DesktopCannon_portable_x64.zip

@@ -72,29 +72,26 @@ fn fresh_layout(app: &tauri::AppHandle) -> Result<Layout, String> {
     if actual_size.width!=display.width || actual_size.height!=display.height {
         overlay.set_size(PhysicalSize::new(display.width,display.height)).map_err(|e|e.to_string())?;
     }
-    // Keep user position whenever it fits; avoid trapping the cannon off-screen.
-    // The cannon sprite is laid out within a 360x240 CSS-pixel webview.
-    // Re-check physical window bounds after DPI/monitor changes; an undersized
-    // native webview crops the art even when the PNG and CSS are correct.
+    // Refresh the physical size for DPI changes, but NEVER clamp or move
+    // the interactive cannon while merely reading layout. The transparent
+    // 360x240 webview intentionally has margins around the painted cannon:
+    // moving its top-left outside work_area may be necessary to place the
+    // visible cannon artwork flush against the bottom/left screen edge.
+    //
+    // icon_environment() invokes fresh_layout() every 2s when icon physics is
+    // enabled. Clamping to work_area here used to snap any user drag back
+    // after each poll. Keep the user's real, freely dragged outer position.
     let expected_size = PhysicalSize::new((360.0 * scale).round() as u32,
                                           (240.0 * scale).round() as u32);
-    let mut size=cannon.outer_size().map_err(|e|e.to_string())?;
+    let size=cannon.outer_size().map_err(|e|e.to_string())?;
     if size != expected_size {
         cannon.set_size(expected_size).map_err(|e|e.to_string())?;
-        size=cannon.outer_size().map_err(|e|e.to_string())?;
     }
     let pos=cannon.outer_position().map_err(|e|e.to_string())?;
-    let min_x=work.position.x;let min_y=work.position.y;
-    let max_x=(work.position.x as i64+work.size.width as i64-size.width as i64).max(min_x as i64) as i32;
-    let max_y=(work.position.y as i64+work.size.height as i64-size.height as i64).max(min_y as i64) as i32;
-    let nx=pos.x.clamp(min_x,max_x);let ny=pos.y.clamp(min_y,max_y);
-    if nx!=pos.x || ny!=pos.y {
-        cannon.set_position(PhysicalPosition::new(nx,ny)).map_err(|e|e.to_string())?;
-    }
     Ok(Layout {
         overlay_x:0.0,overlay_y:0.0,
-        cannon_x:(nx-origin.x) as f64/scale,
-        cannon_y:(ny-origin.y) as f64/scale,
+        cannon_x:(pos.x-origin.x) as f64/scale,
+        cannon_y:(pos.y-origin.y) as f64/scale,
         screen_width:display.width as f64/scale,
         screen_height:display.height as f64/scale,
         taskbar_top:(work.position.y as i64+work.size.height as i64-origin.y as i64) as f64/scale,

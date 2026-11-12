@@ -73,8 +73,17 @@ fn fresh_layout(app: &tauri::AppHandle) -> Result<Layout, String> {
         overlay.set_size(PhysicalSize::new(display.width,display.height)).map_err(|e|e.to_string())?;
     }
     // Keep user position whenever it fits; avoid trapping the cannon off-screen.
+    // The cannon sprite is laid out within a 360x240 CSS-pixel webview.
+    // Re-check physical window bounds after DPI/monitor changes; an undersized
+    // native webview crops the art even when the PNG and CSS are correct.
+    let expected_size = PhysicalSize::new((360.0 * scale).round() as u32,
+                                          (240.0 * scale).round() as u32);
+    let mut size=cannon.outer_size().map_err(|e|e.to_string())?;
+    if size != expected_size {
+        cannon.set_size(expected_size).map_err(|e|e.to_string())?;
+        size=cannon.outer_size().map_err(|e|e.to_string())?;
+    }
     let pos=cannon.outer_position().map_err(|e|e.to_string())?;
-    let size=cannon.outer_size().map_err(|e|e.to_string())?;
     let min_x=work.position.x;let min_y=work.position.y;
     let max_x=(work.position.x as i64+work.size.width as i64-size.width as i64).max(min_x as i64) as i32;
     let max_y=(work.position.y as i64+work.size.height as i64-size.height as i64).max(min_y as i64) as i32;

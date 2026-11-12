@@ -1,9 +1,9 @@
 {
   "name": "desktop-cannon",
   "private": true,
-  "version": "0.6.6-rc.1",
+  "version": "0.6.6",
   "type": "module",
-  "description": "Desktop Cannon V0.6.6 RC1: repair window stacking and DPI clipping; Windows release validation",
+  "description": "Desktop Cannon v0.6.6: Windows window stacking and DPI geometry fixes",
   "scripts": {
     "preview": "node scripts/dev-server.mjs",
     "test": "node --test",

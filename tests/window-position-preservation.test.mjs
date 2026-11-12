@@ -8,7 +8,8 @@ import {readFileSync} from 'node:fs';
 // bounds (e.g. placing the visible cannon flush with the bottom-left edge).
 const lib=readFileSync(new URL('../src-tauri/src/lib.rs',import.meta.url),'utf8');
 const overlay=readFileSync(new URL('../web/js/overlay.mjs',import.meta.url),'utf8');
-const section=lib.slice(lib.indexOf('fn fresh_layout('),lib.indexOf('#[tauri::command]\nasync fn icon_environment'));
+// Stop at the next function, independent of Windows CRLF vs Unix LF.
+const section=lib.slice(lib.indexOf('fn fresh_layout('),lib.indexOf('async fn icon_environment('));
 
 test('periodic icon environment refresh reads layout without relocating cannon',()=>{
   assert.ok(section.startsWith('fn fresh_layout('));

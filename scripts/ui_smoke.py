@@ -26,7 +26,7 @@ try:
         page.wait_for_timeout(700)
         assert c.locator('#scene').get_attribute('data-state') == 'idle', 'initial idle state'
         assert o.locator('#field').is_visible(), 'overlay canvas visible'
-        assert page.evaluate("document.querySelector('#overlay').style.pointerEvents") == 'none', 'overlay iframe clickthrough preview'
+        assert page.evaluate("getComputedStyle(document.querySelector('#overlay')).pointerEvents") == 'none', 'overlay iframe clickthrough preview'
         screenshot=root/'docs'/'browser_preview_idle.png';page.screenshot(path=str(screenshot),full_page=True)
         initial=page.locator('#cannon').bounding_box()
         body=c.locator('#recoil').bounding_box()

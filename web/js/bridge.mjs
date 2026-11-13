@@ -54,3 +54,24 @@ export async function getIconEnvironment(){
   if(!tauri){const l=await getLayout();return {layout:l,fingerprint:`browser:${l.screenWidth}x${l.screenHeight}`};}
   return tauri.core.invoke('icon_environment');
 }
+
+/** Persistent settings are owned by Rust. Browser preview never changes native state. */
+export async function getAppSettings() {
+  return tauri?tauri.core.invoke('get_app_settings'):
+    {audioEnabled:true,iconEnabled:false,onboardingDone:true,cannonPosition:null};
+}
+export async function setIconInteraction(enabled) {
+  if(!tauri)return {audioEnabled:true,iconEnabled:false,onboardingDone:true,cannonPosition:null};
+  return tauri.core.invoke('set_icon_interaction',{enabled:Boolean(enabled)});
+}
+export async function setAudioEnabled(enabled) {
+  if(!tauri)return {audioEnabled:Boolean(enabled),iconEnabled:false,onboardingDone:true,cannonPosition:null};
+  return tauri.core.invoke('set_audio_enabled',{enabled:Boolean(enabled)});
+}
+export async function setOnboardingDone() {
+  if(!tauri)return {onboardingDone:true};
+  return tauri.core.invoke('set_onboarding_done');
+}
+export async function resetCannonPosition() {
+  if(tauri)return tauri.core.invoke('reset_cannon_position');
+}

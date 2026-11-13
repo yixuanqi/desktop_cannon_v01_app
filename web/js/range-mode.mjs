@@ -63,13 +63,13 @@ export class DesktopRange {
   constructor({now=()=>Date.now(),durationMs=RANGE_DURATION_MS,bestScore=0}={}) {
     this.now=now;this.durationMs=durationMs;this.bestScore=Math.max(0,Number(bestScore)||0);
     this.active=false;this.finished=false;this.reason='';this.score=0;this.combo=0;
-    this.targets=[];this.origin=null;this.bounds=null;this.endsAt=0;this.wave=0;
+    this.targets=[];this.origin=null;this.bounds=null;this.endsAt=0;this.wave=0;this.finishedAt=0;
     this.lastHitAt=-Infinity;this.lastAward=null;
   }
   start(bounds,origin) {
     const planned=planRangeTargets(bounds,origin,0);
     if(!planned.length)return false;
-    this.active=true;this.finished=false;this.reason='';
+    this.active=true;this.finished=false;this.reason='';this.finishedAt=0;
     this.score=0;this.combo=0;this.wave=0;this.lastHitAt=-Infinity;
     this.lastAward=null;this.targets=planned;this.bounds={...bounds};this.origin={...origin};
     this.endsAt=this.now()+this.durationMs;
@@ -77,7 +77,7 @@ export class DesktopRange {
   }
   stop(reason='stopped') {
     if(!this.active)return false;
-    this.active=false;this.finished=true;this.reason=reason;
+    this.active=false;this.finished=true;this.reason=reason;this.finishedAt=this.now();
     this.bestScore=Math.max(this.bestScore,this.score);
     this.targets=[];return true;
   }

@@ -17,6 +17,7 @@ const flash = document.querySelector('#flash');
 const meshFrame = document.querySelector('#mesh-frame');
 const leverAxis = document.querySelector('#lever-axis');
 const interactionToggle=document.querySelector('#icon-toggle');
+const rangeToggle=document.querySelector('#range-toggle');
 const intro=document.querySelector('#onboarding');
 const introEnable=document.querySelector('#intro-enable');
 const introDismiss=document.querySelector('#intro-dismiss');
@@ -251,6 +252,31 @@ bolt.addEventListener('keydown',e=>{
   setAim(AIM.maxPull*.65,currentAngle);showState(STAGES.charging);
   void release({preventDefault(){},stopPropagation(){},pointerId:null,clientX:NaN,clientY:NaN});
 });
+// Range controls are always optional. They never toggle Windows icon capture.
+let rangeActive=false;
+rangeToggle?.addEventListener('click',async()=>{
+  rangeToggle.disabled=true;
+  try{
+    const fresh=await getLayout();
+    const origin=muzzleOnOverlay(fresh,AIM.baseAngle);
+    await emit('range:toggle',{origin});
+  }catch(error){
+    console.error('虚拟靶场启动失败',error);
+    rangeToggle.title='无法取得当前窗口坐标，请重新放置小炮';
+  }finally{rangeToggle.disabled=false;}
+});
+listen('range:status',status=>{
+  rangeActive=Boolean(status?.active);
+  if(!rangeToggle)return;
+  rangeToggle.setAttribute('aria-pressed',String(rangeActive));
+  rangeToggle.textContent=rangeActive?`🎯 关闭靶场 ${status.secondsLeft}s`:
+    status?.finished?'🎯 再玩 30 秒':'🎯 30 秒靶场';
+  rangeToggle.title=rangeActive?
+    `虚拟手绘靶场 · 当前 ${status.score} 分 · 最佳 ${status.bestScore} 分；点击退出`:
+    '练习靶仅为虚拟图案，绝不修改 Explorer 真实图标或文件';
+});
+// Restore button status when the cannon window is reloaded.
+void emit('range:status-request',{}).catch(()=>{});
 listen('cannon:impact',payload=>playSound('impact',payload?.power??.35));
 getLayout().then(l=>{layout=l;}).catch(err=>console.error('桌面坐标初始化失败',err));
 updatePitch();

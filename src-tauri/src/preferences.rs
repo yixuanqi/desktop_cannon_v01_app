@@ -10,7 +10,7 @@ pub struct WindowPosition {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct UserPrefs {
     pub audio_enabled: bool,
     /// Only set true after the user explicitly enables desktop-icon interaction.

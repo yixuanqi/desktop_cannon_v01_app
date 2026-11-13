@@ -1,8 +1,11 @@
 mod icon_interaction;
 mod icon_visual;
+mod preferences;
 use serde::Serialize;
 use std::time::UNIX_EPOCH;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc::{Sender, RecvTimeoutError};
+use std::time::Duration;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
@@ -189,6 +192,80 @@ fn get_layout(app: tauri::AppHandle) -> Result<Layout,String> {
     fresh_layout(&app)
 }
 
+struct TrayMenus {
+    audio: MenuItem,
+    interaction: MenuItem,
+}
+struct PositionSender(Sender<preferences::WindowPosition>);
+
+fn persist_cannon_position(app: &tauri::AppHandle) {
+    if let Some(window)=app.get_webview_window("cannon") {
+        if let Ok(point)=window.outer_position() {
+            let _=app.state::<preferences::PrefsStore>().update(|p| {
+                p.cannon_position=Some(preferences::WindowPosition{x:point.x,y:point.y});
+            });
+        }
+    }
+}
+
+#[tauri::command]
+fn get_app_settings(app: tauri::AppHandle) -> preferences::UserPrefs {
+    app.state::<preferences::PrefsStore>().get()
+}
+
+#[tauri::command]
+fn set_onboarding_done(app: tauri::AppHandle) -> Result<preferences::UserPrefs,String> {
+    app.state::<preferences::PrefsStore>().update(|p|p.onboarding_done=true)
+}
+
+fn change_icon_interaction(app: &tauri::AppHandle, enabled: bool) -> Result<preferences::UserPrefs,String> {
+    let prefs=app.state::<preferences::PrefsStore>().update(|p|p.icon_enabled=enabled)?;
+    ICON_INTERACTION.store(enabled,Ordering::SeqCst);
+    if let Some(menu)=app.try_state::<TrayMenus>() {
+        let _=menu.interaction.set_text(if enabled {"关闭桌面图标物理互动 ✓"}
+            else {"开启桌面图标物理互动"});
+    }
+    use tauri::Emitter;
+    let _=app.emit("icon:interaction-changed",enabled);
+    Ok(prefs)
+}
+
+#[tauri::command]
+fn set_icon_interaction(app: tauri::AppHandle, enabled: bool) -> Result<preferences::UserPrefs,String> {
+    change_icon_interaction(&app,enabled)
+}
+
+fn change_audio(app: &tauri::AppHandle, enabled: bool) -> Result<preferences::UserPrefs,String> {
+    let prefs=app.state::<preferences::PrefsStore>().update(|p|p.audio_enabled=enabled)?;
+    if let Some(menu)=app.try_state::<TrayMenus>() {
+        let _=menu.audio.set_text(if enabled {"关闭音效 ✓"} else {"开启音效"});
+    }
+    use tauri::Emitter;
+    let _=app.emit("cannon:audio-changed",enabled);
+    Ok(prefs)
+}
+
+#[tauri::command]
+fn set_audio_enabled(app: tauri::AppHandle, enabled: bool) -> Result<preferences::UserPrefs,String> {
+    change_audio(&app,enabled)
+}
+
+/// Recover from a saved position on a disconnected display without touching
+/// the icon-physics snapshot or the other transparent window.
+#[tauri::command]
+fn reset_cannon_position(app: tauri::AppHandle) -> Result<(),String> {
+    let cannon=app.get_webview_window("cannon").ok_or("CANNON_UNAVAILABLE")?;
+    let monitor=cannon.primary_monitor().map_err(|e|e.to_string())?.ok_or("MONITOR_UNAVAILABLE")?;
+    let work=monitor.work_area();
+    let size=cannon.outer_size().map_err(|e|e.to_string())?;
+    let s=monitor.scale_factor();
+    let x=work.position.x+work.size.width as i32-size.width as i32-(15.0*s).round() as i32;
+    let y=work.position.y+work.size.height as i32-size.height as i32-(4.0*s).round() as i32;
+    cannon.set_position(PhysicalPosition::new(x,y)).map_err(|e|e.to_string())?;
+    persist_cannon_position(&app);
+    Ok(())
+}
+
 /// Reassert the ordering of our two focusless topmost windows.
 /// Windows may place a newly activated topmost editor above the gadget.
 /// Keep the click-through overlay below the cannon, without focusing either.
@@ -208,8 +285,12 @@ pub fn run() {
         // Must be registered first. This prevents new copies of Desktop Cannon
         // from creating duplicate overlays and reporting stale hitboxes.
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
-        .invoke_handler(tauri::generate_handler![get_layout, icon_environment, icon_capabilities, icon_snapshot, icon_visual_samples, icon_visual_guard, icon_visual_guard_many])
+        .invoke_handler(tauri::generate_handler![get_layout, icon_environment, icon_capabilities, icon_snapshot, icon_visual_samples, icon_visual_guard, icon_visual_guard_many, get_app_settings, set_icon_interaction, set_audio_enabled, set_onboarding_done, reset_cannon_position])
         .setup(|app| {
+            let settings_path=app.path().app_config_dir()?.join("settings.json");
+            app.manage(preferences::PrefsStore::open(settings_path));
+            let saved=app.state::<preferences::PrefsStore>().get();
+            ICON_INTERACTION.store(saved.icon_enabled,Ordering::SeqCst);
             // Create the overlay FIRST, hidden, so it can never absorb a click
             // before cursor pass-through has been configured.
             let overlay_page = if std::env::var("CANNON_ICON_DEBUG").ok().as_deref()==Some("1") {
@@ -243,10 +324,14 @@ pub fn run() {
             let window_height = (240.0 * s).round() as u32;
             let margin_right = (15.0 * s).round() as i32;
             let margin_bottom = (4.0 * s).round() as i32;
-            let cannon_px = work.position.x + work.size.width as i32
+            let default_x = work.position.x + work.size.width as i32
                 - window_width as i32 - margin_right;
-            let cannon_py = work.position.y + work.size.height as i32
+            let default_y = work.position.y + work.size.height as i32
                 - window_height as i32 - margin_bottom;
+            let restored=saved.cannon_position.and_then(|p|preferences::viable_position(
+                p,origin.x,origin.y,display.width,display.height,window_width,window_height));
+            let cannon_px=restored.map(|p|p.x).unwrap_or(default_x);
+            let cannon_py=restored.map(|p|p.y).unwrap_or(default_y);
 
             overlay.set_position(PhysicalPosition::new(origin.x, origin.y))?;
             overlay.set_size(PhysicalSize::new(display.width, display.height))?;
@@ -291,17 +376,15 @@ pub fn run() {
             restore_cannon_z_order(&overlay, &cannon)?;
 
             let visibility = MenuItem::with_id(app, "visibility", "显示 / 隐藏小炮", true, None::<&str>)?;
-            let mute = MenuItem::with_id(app, "audio", "音效开 / 关", true, None::<&str>)?;
-            let interaction = MenuItem::with_id(
-                app,
-                "icon_interaction",
-                "桌面图标物理互动：开启（默认关闭）",
-                true,
-                None::<&str>,
-            )?;
+            let mute = MenuItem::with_id(app, "audio",
+                if saved.audio_enabled {"关闭音效 ✓"} else {"开启音效"},true,None::<&str>)?;
+            let interaction = MenuItem::with_id(app, "icon_interaction",
+                if saved.icon_enabled {"关闭桌面图标物理互动 ✓"} else {"开启桌面图标物理互动"},
+                true,None::<&str>)?;
+            let reset_position=MenuItem::with_id(app,"reset_position","重置小炮位置",true,None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "退出桌面小炮", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&visibility, &mute, &interaction, &quit])?;
-            let interaction_label = interaction.clone();
+            let menu = Menu::with_items(app, &[&visibility, &mute, &interaction, &reset_position, &quit])?;
+            app.manage(TrayMenus {audio:mute.clone(),interaction:interaction.clone()});
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().expect("缺少应用图标").clone())
                 .tooltip("桌面小炮 · 拉动红色炮闩")
@@ -315,9 +398,10 @@ pub fn run() {
                                 app.get_webview_window("overlay"),
                             ) {
                                 if cannon.is_visible().unwrap_or(false) {
-                                    ICON_INTERACTION.store(false, Ordering::SeqCst);
-                                    let _ = interaction_label.set_text("桌面图标物理互动：开启（默认关闭）");
-                                    { use tauri::Emitter; let _ = app.emit("icon:interaction-changed", false); }
+                                    persist_cannon_position(app);
+                                    // Hide clears all visual masks; the saved opt-in preference
+                                    // is restored only after the user shows the app again.
+                                    { use tauri::Emitter; let _=app.emit("cannon:visibility-changed",false); }
                                     let _ = cannon.hide();
                                     let _ = overlay.hide();
                                 } else {
@@ -326,31 +410,52 @@ pub fn run() {
                                     // Hide/show from the tray also recovers stacking behind
                                     // other always-on-top editor/tool windows.
                                     let _ = restore_cannon_z_order(&overlay, &cannon);
+                                    { use tauri::Emitter; let _=app.emit("cannon:visibility-changed",true); }
                                 }
                             }
                         }
                         "audio" => {
-                            use tauri::Emitter;
-                            let _ = app.emit("cannon:toggle-audio", ());
+                            let enabled=app.state::<preferences::PrefsStore>().get().audio_enabled;
+                            let _=change_audio(app,!enabled);
                         }
                         "icon_interaction" => {
-                            use tauri::Emitter;
-                            let next = !ICON_INTERACTION.fetch_xor(true, Ordering::SeqCst);
-                            let _ = interaction_label.set_text(if next {
-                                "关闭桌面图标物理互动"
-                            } else {
-                                "桌面图标物理互动：开启（默认关闭）"
-                            });
-                            let _ = app.emit("icon:interaction-changed", next);
+                            let enabled=app.state::<preferences::PrefsStore>().get().icon_enabled;
+                            let _=change_icon_interaction(app,!enabled);
                         }
-                        "quit" => app.exit(0),
+                        "reset_position" => { let _=reset_cannon_position(app.clone()); }
+                        "quit" => { persist_cannon_position(app); app.exit(0); },
                         _ => {}
                     }
                 })
                 .build(app)?;
+            // One debounced position writer: no file IO while Windows is dragging,
+            // and no thread-per-mouse-move. Persist after 650ms of inactivity.
+            let (tx,rx)=std::sync::mpsc::channel::<preferences::WindowPosition>();
+            app.manage(PositionSender(tx));
+            let worker_app=app.handle().clone();
+            std::thread::spawn(move || {
+                while let Ok(mut pos)=rx.recv() {
+                    loop {
+                        match rx.recv_timeout(Duration::from_millis(650)) {
+                            Ok(next)=>pos=next,
+                            Err(RecvTimeoutError::Timeout)=>break,
+                            Err(RecvTimeoutError::Disconnected)=>return,
+                        }
+                    }
+                    let _=worker_app.state::<preferences::PrefsStore>().update(|p|p.cannon_position=Some(pos));
+                }
+            });
             Ok(())
         })
         .on_window_event(|window,event| {
+            if window.label()=="cannon" {
+                if let tauri::WindowEvent::Moved(pos)=event {
+                    if let Some(channel)=window.app_handle().try_state::<PositionSender>() {
+                        let _=channel.0.send(preferences::WindowPosition{x:pos.x,y:pos.y});
+                    }
+                }
+                return;
+            }
             if window.label()!="overlay" {return;}
             let reason=match event {
                 tauri::WindowEvent::Resized(_)=>Some("overlay-resized"),

@@ -6,6 +6,8 @@ import { PHYSICS, createProjectile, advanceProjectileFrame } from './physics.mjs
 import { describeIconProblem, describeIconReady } from './icon-status.mjs';
 import { ParticleSystem } from './particles.mjs';
 import { predictedTrajectory } from './trajectory.mjs';
+import { DesktopRange, RANGE_BEST_KEY } from './range-mode.mjs';
+import { drawDesktopRange } from './range-draw.mjs';
 
 const iconDebug = Boolean(globalThis.window?.location?.search?.includes('iconDebug=1'));
 const canvas=document.querySelector('#field');
@@ -13,6 +15,26 @@ const ctx=canvas.getContext('2d',{alpha:true});
 const notice=document.querySelector('#illusion-notice');
 const sprite=new Image();sprite.src='/assets/cannonball.png';
 const fx=new ParticleSystem();const projectiles=[];
+function readRangeBest(){
+  try{return Math.max(0,Number(globalThis.localStorage?.getItem(RANGE_BEST_KEY))||0);}
+  catch{return 0;}
+}
+const range=new DesktopRange({bestScore:readRangeBest()});
+let rangeClock=0;
+function rangeStatus(){void emit('range:status',range.snapshot()).catch(()=>{});}
+function saveRangeBest(){
+  try{globalThis.localStorage?.setItem(RANGE_BEST_KEY,String(range.bestScore));}
+  catch{/* Private storage or unavailable origin: gameplay still works. */}
+}
+function completeRange(){
+  if(rangeClock){clearInterval(rangeClock);rangeClock=0;}
+  saveRangeBest();rangeStatus();render();
+  // Remove the result card after a short readout. Don't keep an idle overlay redrawing.
+  if(range.finished)window.setTimeout?.(()=>{if(!range.active)render();},4900);
+}
+function rangeBounds(){return {left:0,top:0,right:width,
+  bottom:Math.min(height,layout?.taskbarTop??height-48)};}
+
 let layout;let rafId=0;let lastTick=0;let width=0;let height=0;
 let renderedFrames=0;let lastImpactSoundAt=0;let aim=null;
 let nextIllusionGuardAt=0;let illusionGuardPending=false;
@@ -155,6 +177,7 @@ async function reconcileEnvironment(source='periodic') {
 }
 
 function onDisplayChange(source){
+  if(range.active){range.stop('display-changed');completeRange();}
   if(!illusion.enabled)return;
   // Cancel immediately; never show a wallpaper patch at an old DPI or origin.
   environmentSequence++;lifecycle.environment='';
@@ -189,6 +212,7 @@ function render(){
     ctx.restore();
   }
   illusion.draw(ctx);
+  drawDesktopRange(ctx,range);
   // Debug-only: start overlay with ?iconDebug=1; do not clutter tray.
   if(iconDebug)
     illusion.drawDebug(ctx,iconProbe.candidates);
@@ -204,7 +228,15 @@ function loop(timestamp){
   const bounds={left:0,top:0,right:width,bottom:Math.min(height,layout?.taskbarTop??height-48)};
   for(const ball of projectiles){
     const oldX=ball.x,oldY=ball.y;
-    advanceProjectileFrame(ball,dt,bounds,onImpact,segment=>iconProbe.onSegment(segment));
+    advanceProjectileFrame(ball,dt,bounds,onImpact,segment=>{
+      iconProbe.onSegment(segment);
+      const hits=range.hitSegment(segment);
+      if(hits.length){
+        for(const hit of hits)fx.spawn('impact',hit.x,hit.y,51,.45);
+        rangeStatus();
+        if(!range.active)completeRange();
+      }
+    });
     ball.trailTimer+=dt;
     if(ball.alive&&ball.trailTimer>.07&&!ball.grounded&&Math.hypot(ball.x-oldX,ball.y-oldY)>.8){
       ball.trailTimer=0;fx.spawn('smoke',ball.x,ball.y,20,.34);
@@ -227,6 +259,28 @@ function loop(timestamp){
 function wake(){if(!rafId){lastTick=0;rafId=requestAnimationFrame(loop);}}
 
 listen('icon:interaction-changed',enabled=>setInteractionEnabled(Boolean(enabled)));
+listen('range:status-request',()=>rangeStatus());
+listen('range:toggle',payload=>{
+  if(range.active){
+    range.stop('stopped');completeRange();return;
+  }
+  const origin=payload?.origin;
+  if(!range.start(rangeBounds(),origin)){
+    showNotice('请将小炮放在主屏幕右侧，再开启虚拟靶场',3600);
+    rangeStatus();return;
+  }
+  // No changes to the real-icon interaction setting or Windows Explorer.
+  showNotice('30 秒虚拟靶场已开始：击中手绘靶得分，不影响真实桌面图标',2800);
+  rangeStatus();render();
+  if(rangeClock)clearInterval(rangeClock);
+  rangeClock=setInterval(()=>{
+    if(range.tick())completeRange();
+    else {render();rangeStatus();}
+  },1000);
+});
+listen('cannon:visibility-changed',visible=>{
+  if(!visible&&range.active){range.stop('hidden');completeRange();}
+});
 listen('cannon:aim',payload=>{if(Number.isFinite(payload?.x)&&Number.isFinite(payload?.y)){aim=payload;aimDirty=true;wake();}});
 listen('cannon:aim-stop',()=>{aim=null;aimDots=[];aimDirty=true;render();});
 listen('cannon:fire',payload=>{
@@ -234,10 +288,10 @@ listen('cannon:fire',payload=>{
   if(projectiles.length>=PHYSICS.maxProjectiles)projectiles.shift();
   projectiles.push(createProjectile(payload));fx.spawn('muzzle',payload.x,payload.y,70,.17);wake();
 });
-window.addEventListener('resize',()=>{illusion.cancel();resize();render();onDisplayChange('webview-resize');});
+window.addEventListener('resize',()=>{illusion.cancel();resize();onDisplayChange('webview-resize');render();});
 listen('icon:environment-changed',payload=>onDisplayChange(payload?.reason||'native-window-event'));
 window.addEventListener('pagehide',()=>illusion.cancel());
-document.addEventListener?.('visibilitychange',()=>{if(document.hidden)illusion.cancel();});
+document.addEventListener?.('visibilitychange',()=>{if(document.hidden){illusion.cancel();if(range.active){range.stop('hidden');completeRange();}}});
 
 getLayout().then(value=>{
   layout=value;resize();
@@ -259,6 +313,6 @@ if(isTauri){
   timer?.unref?.();window.addEventListener?.('pagehide',()=>window.clearInterval(timer));
 }
 resize();updateNotice();
-window.__overlayDebug={iconProbe,illusion,lifecycle,projectiles,
+window.__overlayDebug={iconProbe,illusion,lifecycle,projectiles,range,
   get renderedFrames(){return renderedFrames;},get active(){return Boolean(rafId);},get aim(){return aim;},
   get layout(){return layout;},fire:payload=>emit('cannon:fire',payload)};

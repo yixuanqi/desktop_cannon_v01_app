@@ -1,21 +1,24 @@
 /** Lightweight canvas-only hand-drawn practice targets. No DOM overlays. */
-export function drawDesktopRange(ctx,range,{now=Date.now()}={}) {
+export function drawDesktopRange(ctx,range,{now=Date.now(),width=1280}={}) {
   if(!range.active && (!range.finished || now-range.finishedAt>4600))return;
   const snapshot=range.snapshot();
   ctx.save();
+  // Prefer the top CENTER so this temporary HUD does not cover the usual
+  // top-left Explorer icon column. The overlay remains mouse click-through.
+  const hudX=Math.max(16,Math.round((width-260)/2));
   // A compact, readable scorecard; the entire overlay remains click-through.
   ctx.globalAlpha=.96;
   ctx.fillStyle='#fff4d9';
   ctx.strokeStyle='#ad8959';
   ctx.lineWidth=2;
-  ctx.beginPath();ctx.roundRect(17,19,260,69,14);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.roundRect(hudX,19,260,69,14);ctx.fill();ctx.stroke();
   ctx.fillStyle='#75512e';ctx.font='bold 14px "Microsoft YaHei UI",sans-serif';
-  ctx.fillText('🎯 虚拟桌面靶场',29,42);
+  ctx.fillText('🎯 虚拟桌面靶场',hudX+12,42);
   ctx.font='bold 12px "Microsoft YaHei UI",sans-serif';
-  ctx.fillText(range.active?`剩余 ${snapshot.secondsLeft}s   得分 ${snapshot.score}`:`完成！ 得分 ${snapshot.score}`,29,62);
+  ctx.fillText(range.active?`剩余 ${snapshot.secondsLeft}s   得分 ${snapshot.score}`:`完成！ 得分 ${snapshot.score}`,hudX+12,62);
   ctx.font='11px "Microsoft YaHei UI",sans-serif';
   ctx.fillStyle='#8a6a45';
-  ctx.fillText(`连击 ×${snapshot.combo}    最佳 ${snapshot.bestScore}`,29,79);
+  ctx.fillText(`连击 ×${snapshot.combo}    最佳 ${snapshot.bestScore}`,hudX+12,79);
 
   if(range.active){
     for(const t of range.targets){

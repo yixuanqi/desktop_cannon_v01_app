@@ -64,9 +64,27 @@ try:
         page.wait_for_timeout(450)
         later_count=o.locator('canvas').evaluate('el=>window.__overlayDebug.projectiles.length')
         assert later_count >= 1, f'keyboard Enter did not fire: {later_count}'
+
+        # The 30-second hand-drawn target mode is optional, works without
+        # enabling Windows icon capture, and can return to free play.
+        c.locator('#range-toggle').click()
+        page.wait_for_function(
+            "document.querySelector('#overlay').contentWindow.__overlayDebug?.range.active === true",
+            timeout=3000)
+        range_info=o.locator('#field').evaluate(
+            'el=>({active:window.__overlayDebug.range.active,targets:window.__overlayDebug.range.targets.length,score:window.__overlayDebug.range.score,iconPhysics:window.__overlayDebug.iconProbe.enabled})')
+        assert range_info['targets']>=1 and range_info['score']==0, f'virtual targets missing: {range_info}'
+        assert not range_info['iconPhysics'], 'virtual range must not automatically enable real Windows icon capture'
+        assert c.locator('#range-toggle').get_attribute('aria-pressed') == 'true'
+        page.screenshot(path=str(root/'docs'/'browser_preview_range.png'),full_page=True)
+        c.locator('#range-toggle').click()
+        page.wait_for_function(
+            "document.querySelector('#overlay').contentWindow.__overlayDebug?.range.active === false",
+            timeout=3000)
+        assert c.locator('#range-toggle').get_attribute('aria-pressed') == 'false'
         assert not errors, f'JavaScript errors: {errors}'
         browser.close()
-        print('PASS Chromium preview: reposition > bolt drag > power/pitch > trajectory preview > fire > projectile > recovery')
+        print('PASS Chromium preview: reposition > charge > fire > keyboard > optional virtual range > free play')
         print(f'Frames: {moving["frames"]}; power: {strength}; page errors: 0')
 except Exception as exc:
     print('FAIL UI smoke:',exc)

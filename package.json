@@ -1,9 +1,9 @@
 {
   "name": "desktop-cannon",
   "private": true,
-  "version": "0.6.8",
+  "version": "0.7.0",
   "type": "module",
-  "description": "Desktop Cannon v0.6.8: contest-ready onboarding, desktop interaction settings and quality improvements",
+  "description": "Desktop Cannon v0.7.0: optional 30-second desktop practice range with virtual physics targets and combo scores",
   "scripts": {
     "preview": "node scripts/dev-server.mjs",
     "test": "node --test",

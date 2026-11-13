@@ -93,7 +93,7 @@ mod tests {
     }
     #[test]
     fn older_or_partial_settings_remain_compatible() {
-        let p: UserPrefs = serde_json::from_str(r#"{"audio_enabled":false}"#).unwrap();
+        let p: UserPrefs = serde_json::from_str(r#"{"audioEnabled":false}"#).unwrap();
         assert!(!p.audio_enabled);
         assert!(!p.icon_enabled);
         assert_eq!(p.cannon_position, None);

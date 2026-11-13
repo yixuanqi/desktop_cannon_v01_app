@@ -9,7 +9,7 @@ test('拖动小炮之后瞄准使用新窗口坐标，并以抬手位置作为�
  let calls=0, resolveLatest;
  const emitted=[];
  globalThis.__TAURI__={
-   core:{invoke:async()=>{calls++; if(calls===1)return oldLayout;
+   core:{invoke:async(command)=>{if(command==='get_app_settings')return {audioEnabled:true,iconEnabled:false,onboardingDone:true}; calls++; if(calls===1)return oldLayout;
      if(calls===2)return await new Promise(resolve=>{resolveLatest=resolve});
      return newLayout;
    }},

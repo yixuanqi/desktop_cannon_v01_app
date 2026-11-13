@@ -399,8 +399,10 @@ pub fn run() {
                             ) {
                                 if cannon.is_visible().unwrap_or(false) {
                                     persist_cannon_position(app);
-                                    // Hide clears all visual masks; the saved opt-in preference
-                                    // is restored only after the user shows the app again.
+                                    // Suspend probing while hidden without erasing explicit
+                                    // consent. Re-enable from saved preference on show.
+                                    ICON_INTERACTION.store(false,Ordering::SeqCst);
+                                    { use tauri::Emitter; let _=app.emit("icon:interaction-changed",false); }
                                     { use tauri::Emitter; let _=app.emit("cannon:visibility-changed",false); }
                                     let _ = cannon.hide();
                                     let _ = overlay.hide();
@@ -410,6 +412,9 @@ pub fn run() {
                                     // Hide/show from the tray also recovers stacking behind
                                     // other always-on-top editor/tool windows.
                                     let _ = restore_cannon_z_order(&overlay, &cannon);
+                                    let remember=app.state::<preferences::PrefsStore>().get().icon_enabled;
+                                    ICON_INTERACTION.store(remember,Ordering::SeqCst);
+                                    { use tauri::Emitter; let _=app.emit("icon:interaction-changed",remember); }
                                     { use tauri::Emitter; let _=app.emit("cannon:visibility-changed",true); }
                                 }
                             }

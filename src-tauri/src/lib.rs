@@ -193,8 +193,8 @@ fn get_layout(app: tauri::AppHandle) -> Result<Layout,String> {
 }
 
 struct TrayMenus {
-    audio: MenuItem,
-    interaction: MenuItem,
+    audio: MenuItem<tauri::Wry>,
+    interaction: MenuItem<tauri::Wry>,
 }
 struct PositionSender(Sender<preferences::WindowPosition>);
 
@@ -389,7 +389,7 @@ pub fn run() {
                 .icon(app.default_window_icon().expect("缺少应用图标").clone())
                 .tooltip("桌面小炮 · 拉动红色炮闩")
                 .menu(&menu)
-                .menu_on_left_click(false)
+                .show_menu_on_left_click(false)
                 .on_menu_event(move |app, event| {
                     match event.id.as_ref() {
                         "visibility" => {

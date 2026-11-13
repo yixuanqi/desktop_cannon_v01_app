@@ -35,3 +35,21 @@ body{font-family:'Microsoft YaHei UI','Segoe UI',sans-serif}
 .hint{position:absolute;bottom:20px;left:15px;margin:0;padding:6px 12px;background:#fff8e5ee;border:1px solid #d9ab6b;border-radius:18px;
   color:#86501b;font-weight:600;font-size:11px;pointer-events:none;white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity 180ms,transform 180ms}
 .cannon-scene[data-state="hover"] .hint{opacity:1;transform:translateY(0)}
+
+/* Deliberately contained within the 360x240 transparent cannon window. */
+.icon-quick-toggle{position:absolute;right:7px;top:8px;z-index:8;pointer-events:auto;
+  border:1px solid #bb985e;border-radius:18px;background:#fff8e6ed;color:#7b5825;
+  padding:5px 6px;min-width:108px;font:600 10px/1.25 'Microsoft YaHei UI',sans-serif;
+  box-shadow:0 3px 9px #55330f25;cursor:pointer}
+.icon-quick-toggle[aria-pressed="true"]{background:#e3f4d7ed;border-color:#78b46d;color:#356332}
+.icon-quick-toggle:focus-visible,.onboarding button:focus-visible{outline:2px solid #648ed3;outline-offset:2px}
+.onboarding{position:absolute;right:7px;top:40px;z-index:9;width:133px;max-height:188px;overflow:auto;
+  pointer-events:auto;background:#fff9ebf7;color:#624b30;border:1px solid #e4bd77;border-radius:12px;
+  box-shadow:0 6px 20px #5131093c;padding:8px 9px;font:11px/1.55 'Microsoft YaHei UI',sans-serif}
+.onboarding strong{display:block;font-size:11px}
+.onboarding p{margin:4px 0 8px}
+.onboarding button{display:block;width:100%;margin:3px 0;border:0;border-radius:9px;padding:6px 2px;
+  background:#df9d55;color:#fff;font-weight:700;font-size:10px;cursor:pointer}
+.onboarding button.intro-later{background:#f2e5cc;color:#795b33}
+#intro-error{display:block;font-size:9px;color:#ae4f41}
+[hidden]{display:none!important}

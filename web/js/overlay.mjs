@@ -212,7 +212,7 @@ function render(){
     ctx.restore();
   }
   illusion.draw(ctx);
-  drawDesktopRange(ctx,range);
+  drawDesktopRange(ctx,range,{width});
   // Debug-only: start overlay with ?iconDebug=1; do not clutter tray.
   if(iconDebug)
     illusion.drawDebug(ctx,iconProbe.candidates);

@@ -1,6 +1,7 @@
 /** Synthesized short, quiet chibi effects; no remote audio assets. */
 let context;
 let enabled = true;
+export function setSoundEnabled(value) { enabled = Boolean(value); return enabled; }
 export function toggleSound() { enabled = !enabled; return enabled; }
 export function isSoundEnabled() { return enabled; }
 export function playSound(kind = 'fire', intensity = 1) {

@@ -1,6 +1,6 @@
 [package]
 name = "desktop-cannon"
-version = "0.6.7"
+version = "0.6.8"
 edition = "2021"
 description = "Cute desktop cannon with a click-through overlay"
 

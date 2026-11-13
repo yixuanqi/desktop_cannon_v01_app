@@ -66,7 +66,7 @@ try:
         assert later_count >= 1, f'keyboard Enter did not fire: {later_count}'
         assert not errors, f'JavaScript errors: {errors}'
         browser.close()
-        print('PASS Chromium preview: body reposition → diagonal bolt drag → power/pitch → trajectory preview → fire → projectile → recovery')
+        print('PASS Chromium preview: reposition > bolt drag > power/pitch > trajectory preview > fire > projectile > recovery')
         print(f'Frames: {moving["frames"]}; power: {strength}; page errors: 0')
 except Exception as exc:
     print('FAIL UI smoke:',exc)

@@ -105,6 +105,26 @@ mod tests {
         assert_eq!(viable_position(WindowPosition {x:3500,y:1800},0,0,1920,1080,360,240),None);
     }
     #[test]
+    fn preferences_roundtrip_to_local_file() {
+        let directory=std::env::temp_dir().join(format!("desktop-cannon-pref-test-{}",std::process::id()));
+        let file=directory.join("settings.json");
+        let _=std::fs::remove_dir_all(&directory);
+        let store=PrefsStore::open(file.clone());
+        assert!(!store.get().icon_enabled);
+        store.update(|prefs|{
+            prefs.icon_enabled=true;
+            prefs.audio_enabled=false;
+            prefs.onboarding_done=true;
+            prefs.cannon_position=Some(WindowPosition{x:-40,y:810});
+        }).unwrap();
+        let restored=PrefsStore::open(file.clone()).get();
+        assert!(restored.icon_enabled);
+        assert!(!restored.audio_enabled);
+        assert!(restored.onboarding_done);
+        assert_eq!(restored.cannon_position,Some(WindowPosition{x:-40,y:810}));
+        let _=std::fs::remove_dir_all(directory);
+    }
+    #[test]
     fn serialization_roundtrips() {
         let p = UserPrefs {audio_enabled:false,icon_enabled:true,onboarding_done:true,
             cannon_position:Some(WindowPosition{x:21,y:44})};

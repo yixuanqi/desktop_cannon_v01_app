@@ -1,9 +1,9 @@
 {
   "name": "desktop-cannon",
   "private": true,
-  "version": "0.6.7",
+  "version": "0.6.8",
   "type": "module",
-  "description": "Desktop Cannon v0.6.7: prevent cannon snapback during icon physics polling",
+  "description": "Desktop Cannon v0.6.8: contest-ready onboarding, desktop interaction settings and quality improvements",
   "scripts": {
     "preview": "node scripts/dev-server.mjs",
     "test": "node --test",
@@ -12,7 +12,11 @@
     "dev": "tauri dev",
     "build": "tauri build",
     "test:assets": "python scripts/validate_mesh.py",
-    "render:frames": "python scripts/generate_mesh_frames.py"
+    "render:frames": "python scripts/generate_mesh_frames.py",
+    "pretest": "node scripts/sync-version.mjs --check",
+    "prepreview": "node scripts/sync-version.mjs",
+    "prebuild": "node scripts/sync-version.mjs",
+    "test:version": "node scripts/sync-version.mjs --check"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0"

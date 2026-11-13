@@ -1,9 +1,9 @@
-import { emit, listen, getLayout, startNativeWindowDrag, isTauri } from './bridge.mjs';
+import { emit, listen, getLayout, startNativeWindowDrag, isTauri, getAppSettings, setIconInteraction, setOnboardingDone } from './bridge.mjs';
 import { powerFromPull, shouldFire, STAGES, stateForTimeSinceShot } from './charge.mjs';
 import { aimFromDrag, AIM, rotationDegrees } from './aim.mjs';
 import { framePath, MESH } from './mesh-warp.mjs';
 import { muzzleOnOverlay, muzzleInCannon, receiverInCannon } from './geometry.mjs';
-import { playSound, toggleSound } from './sound.mjs';
+import { playSound, setSoundEnabled } from './sound.mjs';
 import { dragFrameTo } from './window-drag.mjs';
 
 const scene = document.querySelector('#scene');
@@ -16,6 +16,11 @@ const angleNumber = document.querySelector('#angle-number');
 const flash = document.querySelector('#flash');
 const meshFrame = document.querySelector('#mesh-frame');
 const leverAxis = document.querySelector('#lever-axis');
+const interactionToggle=document.querySelector('#icon-toggle');
+const intro=document.querySelector('#onboarding');
+const introEnable=document.querySelector('#intro-enable');
+const introDismiss=document.querySelector('#intro-dismiss');
+const introError=document.querySelector('#intro-error');
 let previousFrame = '';
 // Preload small precomputed sprites so repeated mouse motion doesn't cause IO stalls.
 if(typeof Image !== 'undefined') {
@@ -183,7 +188,69 @@ recoil.addEventListener('pointerup', bodyPointerEnd);
 recoil.addEventListener('pointercancel', bodyPointerEnd);
 recoil.addEventListener('lostpointercapture',()=>{if(movingPreview){movingPreview=false;dragStart=null;scene.dataset.moving='false';}});
 window.addEventListener?.('keydown',(e)=>{if(e.key==='Escape'){cancelCharge();}});
-listen('cannon:toggle-audio',()=>toggleSound());
+// Native settings, tray toggles and this quick button share a single owner.
+let iconEnabled=false;
+function showIconSetting(enabled){
+  iconEnabled=Boolean(enabled);
+  if(interactionToggle){
+    interactionToggle.hidden=!isTauri;
+    interactionToggle.textContent=iconEnabled?'图标互动：开启':'图标互动：关闭';
+    interactionToggle.setAttribute('aria-pressed',String(iconEnabled));
+  }
+}
+async function toggleIconSetting(desired){
+  if(!isTauri)return;
+  if(interactionToggle)interactionToggle.disabled=true;
+  if(introEnable)introEnable.disabled=true;
+  try {
+    const next=await setIconInteraction(Boolean(desired));
+    showIconSetting(next.iconEnabled);
+  } catch(error) {
+    console.error('图标互动开关失败',error);
+    if(introError)introError.textContent='开启失败，请从托盘菜单重试';
+  } finally {
+    if(interactionToggle)interactionToggle.disabled=false;
+    if(introEnable)introEnable.disabled=false;
+  }
+}
+async function finishIntro(enable){
+  if(enable) {
+    await toggleIconSetting(true);
+    if(!iconEnabled)return;
+  }
+  try {
+    await setOnboardingDone();
+    intro.hidden=true;
+  } catch(error) {
+    if(introError)introError.textContent='无法保存引导状态，请检查应用配置目录';
+    console.error(error);
+  }
+}
+interactionToggle?.addEventListener('click',()=>{void toggleIconSetting(!iconEnabled);});
+introEnable?.addEventListener('click',()=>{void finishIntro(true);});
+introDismiss?.addEventListener('click',()=>{void finishIntro(false);});
+listen('icon:interaction-changed',enabled=>showIconSetting(enabled));
+listen('cannon:audio-changed',enabled=>setSoundEnabled(enabled));
+getAppSettings().then(prefs=>{
+  setSoundEnabled(prefs.audioEnabled);
+  showIconSetting(prefs.iconEnabled);
+  if(intro)intro.hidden=!isTauri||Boolean(prefs.onboardingDone);
+}).catch(error=>{console.error('无法读取用户设置',error);if(intro)intro.hidden=true;});
+bolt.addEventListener('keydown',e=>{
+  if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+    e.preventDefault();
+    if(!charging) setAim(0,Math.min(AIM.maxAngle??AIM.max,Math.max(AIM.minAngle??AIM.min,
+      currentAngle+(e.key==='ArrowUp'?.5:-.5))));
+    return;
+  }
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  e.preventDefault();
+  if(charging)return;
+  // Keyboard release reuses the same production physics/fire path as dragging.
+  charging=true;chargeSequence++;activePointerId=null;
+  setAim(AIM.maxPull*.65,currentAngle);showState(STAGES.charging);
+  void release({preventDefault(){},stopPropagation(){},pointerId:null,clientX:NaN,clientY:NaN});
+});
 listen('cannon:impact',payload=>playSound('impact',payload?.power??.35));
 getLayout().then(l=>{layout=l;}).catch(err=>console.error('桌面坐标初始化失败',err));
 updatePitch();

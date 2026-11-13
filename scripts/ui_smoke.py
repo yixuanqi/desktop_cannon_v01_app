@@ -26,7 +26,7 @@ try:
         page.wait_for_timeout(700)
         assert c.locator('#scene').get_attribute('data-state') == 'idle', 'initial idle state'
         assert o.locator('#field').is_visible(), 'overlay canvas visible'
-        assert page.evaluate("document.querySelector('#overlay').style.pointerEvents") == 'none', 'overlay iframe clickthrough preview'
+        assert page.evaluate("getComputedStyle(document.querySelector('#overlay')).pointerEvents") == 'none', 'overlay iframe clickthrough preview'
         screenshot=root/'docs'/'browser_preview_idle.png';page.screenshot(path=str(screenshot),full_page=True)
         initial=page.locator('#cannon').bounding_box()
         body=c.locator('#recoil').bounding_box()
@@ -43,7 +43,7 @@ try:
         strength=c.locator('#power-number').inner_text()
         assert int(strength.strip('%')) > 70, f'power should increase: {strength}'
         pitch=int(c.locator('#angle-number').inner_text().strip('°'))
-        assert pitch >= 39, f'pitch should rise after pulling down: {pitch}'
+        assert 35 <= pitch <= 38, f'pitch should rise but stay within cannon mesh limits (30..38): {pitch}'
         assert o.locator('canvas').evaluate('el=>Boolean(window.__overlayDebug.aim)'), 'trajectory preview should be active'
         screenshot=root/'docs'/'browser_preview_charging.png';page.screenshot(path=str(screenshot),full_page=True)
         page.mouse.up()
@@ -55,9 +55,18 @@ try:
         moving=o.locator('canvas').evaluate('el=>({balls:window.__overlayDebug.projectiles.length,frames:window.__overlayDebug.renderedFrames})')
         assert moving['frames']>10, f'ball animation did not render: {moving}'
         assert c.locator('#scene').get_attribute('data-state') in ('idle','hover')
+        assert c.locator('#onboarding').is_hidden(), 'browser mock must not display native consent UI'
+        assert c.locator('#icon-toggle').is_hidden(), 'native-only icon interaction control'
+        # Accessible keyboard control reuses the actual cannon fire event/physics.
+        c.locator('#bolt').focus()
+        page.keyboard.press('ArrowDown')
+        page.keyboard.press('Enter')
+        page.wait_for_timeout(450)
+        later_count=o.locator('canvas').evaluate('el=>window.__overlayDebug.projectiles.length')
+        assert later_count >= 1, f'keyboard Enter did not fire: {later_count}'
         assert not errors, f'JavaScript errors: {errors}'
         browser.close()
-        print('PASS Chromium preview: body reposition → diagonal bolt drag → power/pitch → trajectory preview → fire → projectile → recovery')
+        print('PASS Chromium preview: reposition > bolt drag > power/pitch > trajectory preview > fire > projectile > recovery')
         print(f'Frames: {moving["frames"]}; power: {strength}; page errors: 0')
 except Exception as exc:
     print('FAIL UI smoke:',exc)

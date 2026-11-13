@@ -6,7 +6,7 @@ test('二维拉闩完整事件链：旋转/预览/发射/复位/Esc取消',async
  const callbacks=new Map();const events=[];
  const layout={cannonX:1250,cannonY:600,overlayX:0,overlayY:0};
  globalThis.__TAURI__={
-  core:{invoke:async()=>({...layout})},
+  core:{invoke:async(name)=>name==='get_app_settings'?{audioEnabled:true,iconEnabled:false,onboardingDone:true}:({...layout})},
   event:{listen:async(n,f)=>{const a=callbacks.get(n)||[];a.push(f);callbacks.set(n,a);return()=>{};},
     emit:async(n,p)=>{events.push({name:n,payload:p}); for(const f of callbacks.get(n)||[])f({payload:p});}},
   window:{getCurrentWindow:()=>({startDragging:async()=>{}})}

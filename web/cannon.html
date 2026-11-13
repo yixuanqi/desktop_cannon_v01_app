@@ -13,5 +13,13 @@
     <div class="fire-flash" id="flash"></div>
     <div class="power" id="power" aria-live="off"><div class="power-label"><span>蓄力 <strong id="power-number">0%</strong></span><span>仰角 <strong id="angle-number">34°</strong></span></div><div class="power-track"><div id="power-fill"></div></div></div>
     <p class="hint" id="hint">按住炮身移动 · 拉红球蓄力 / 上下微调</p>
+    <button class="icon-quick-toggle" id="icon-toggle" type="button" hidden aria-pressed="false" title="仅视觉互动，不修改或移动桌面文件">图标互动：关闭</button>
+    <section class="onboarding" id="onboarding" aria-label="首次使用说明" hidden>
+      <strong>欢迎来到桌面小炮</strong>
+      <p>拖动炮身移动，拉红球蓄力并发射。图标飞散只改变画面，不动真实文件。</p>
+      <button id="intro-enable" type="button">开启图标飞散</button>
+      <button id="intro-dismiss" class="intro-later" type="button">先随便玩玩</button>
+      <span id="intro-error" role="status"></span>
+    </section>
   </div>
 </main><script type="module" src="/js/cannon.mjs"></script></body></html>

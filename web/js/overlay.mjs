@@ -3,6 +3,7 @@ import { IconProbeRuntime } from './icon-interaction/runtime.mjs';
 import { IconIllusion, decodeImage } from './icon-interaction/illusion.mjs';
 import { IconCacheLifecycle, iconSnapshotKey } from './icon-interaction/cache-lifecycle.mjs';
 import { PHYSICS, createProjectile, advanceProjectileFrame } from './physics.mjs';
+import { describeIconProblem, describeIconReady } from './icon-status.mjs';
 import { ParticleSystem } from './particles.mjs';
 import { predictedTrajectory } from './trajectory.mjs';
 
@@ -28,14 +29,14 @@ function updateNotice(){
   const active=Date.now()<visualMessageUntil;
   notice.textContent=active?visualMessage:
     visualState==='loading'?'正在预热桌面图标素材，请稍候…':
-    visualState==='failed'?'图标素材准备失败：本次只播放命中火星':'';
+    visualState==='failed'?'当前环境无法安全显示飞散图标，仍可发射炮弹':'';
   notice.style.display=notice.textContent?'block':'none';
 }
 
 const illusion=new IconIllusion({
   loadImage:decodeImage,getLayout:()=>layout,
-  onError:error=>{visualState='failed';showNotice(`视觉飞散暂不可用：${String(error).slice(0,90)}；命中检测仍正常`,2800);},
-  onReady:({count})=>{visualState=count?'ready':'failed';showNotice(`图标素材已预热：${count} 个`,1800);},
+  onError:error=>{visualState='failed';showNotice(describeIconProblem(error),4200);},
+  onReady:({count,rejected})=>{visualState=count?'ready':'failed';showNotice(describeIconReady(count,count+(rejected||0)),4000);},
 });
 
 function discardVisualCache(reason) {
@@ -71,11 +72,11 @@ async function prepareVisualCache(snapshot){
       if(!illusion.enabled||!lifecycle.isCurrent(revision,signature,environment))return 0;
       if(!count)throw new Error(batch.firstRejection||'NO_VALID_ICON_SAMPLES');
       visualCacheSignature=signature;
-      if(batch.rejected)showNotice(`视觉素材 ${count}/${batch.total} 已预热，${batch.rejected} 个暂不支持（仍可命中）`,2400);
+      if(batch.rejected)showNotice(describeIconReady(count,batch.total),4300);
       return count;
     }catch(error){
       if(!illusion.enabled||!lifecycle.isCurrent(revision,signature,environment))return 0;
-      visualState='failed';showNotice(`素材预热失败：${String(error).slice(0,100)}`,4200);return 0;
+      visualState='failed';showNotice(describeIconProblem(error),4300);return 0;
     }finally{
       if(visualWarmupPromise===task)visualWarmupPromise=null;
       updateNotice();
@@ -101,7 +102,7 @@ const iconProbe=new IconProbeRuntime({
     }
     void prepareVisualCache(snapshot);
   },
-  onError:error=>{visualState='failed';showNotice(`桌面图标读取失败：${String(error).slice(0,90)}`,3800);},
+  onError:error=>{visualState='failed';showNotice(describeIconProblem(error),4200);},
   shouldIgnoreToken:token=>illusion.isActive(token),
   hitEffect:({x,y,token,icon,velocityX,velocityY})=>{
     // This path is deliberately synchronous. No capture, PNG encoding or image decode on impact.
@@ -145,7 +146,7 @@ async function reconcileEnvironment(source='periodic') {
     if(illusion.enabled){
       discardVisualCache('environment-query-error');
       iconProbe.invalidate('environment-query-error');
-      visualState='failed';showNotice(`桌面环境读取失败，已停止图标互动：${String(error).slice(0,70)}`,2500);
+      visualState='failed';showNotice(describeIconProblem(error),4200);
     }
   }finally{
     environmentPending=false;
